@@ -1,0 +1,23 @@
+{
+  "id": "nativo",
+  "nome": "Nativo (padrão)",
+  "descricao": "Legenda limpa como a do Instagram: branca, contorno e sombra leves, sem cor por palavra, frases de 2 a 5 palavras no centro-baixo.",
+  "ordem": 1,
+  "legenda": {
+    "fonte": "DM Sans",
+    "negrito": true,
+    "tamanho": 60,
+    "cor": "FFFFFF",
+    "cor_contorno": "000000",
+    "contorno": 3,
+    "sombra": 2,
+    "maiusculas": false,
+    "karaoke": false,
+    "destacar_chaves": false,
+    "min_palavras": 2,
+    "max_palavras": 5,
+    "max_letras": 26,
+    "y": 1420
+  },
+  "titulo": { "fonte": "DM Sans", "tamanho": 64, "maiusculas": false }
+}

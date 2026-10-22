@@ -1,0 +1,1 @@
+ALTER TABLE public.lead_form_responses ADD COLUMN IF NOT EXISTS renda_mensal text;

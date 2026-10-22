@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board de Conteúdo — Breno & Gabi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F0E8; --panel:#FBF9F4; --ink:#191512; --ink-soft:#5C534A;
+    --line:#191512; --shadow:#191512;
+    --viral:#E0532B; --quem:#1F7A72; --faco:#B87514; --vendo:#2E7D4F;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Public Sans",sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 clamp(14px,3vw,40px) 80px}
+  h1,h2,h3,.disp{font-family:"Bricolage Grotesque",sans-serif}
+  header{padding:26px 0 14px;max-width:1400px;margin:0 auto}
+  .kicker{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  h1{font-size:clamp(26px,4vw,44px);line-height:1.02;margin:6px 0 8px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--ink-soft);font-size:15px;max-width:60ch;line-height:1.5}
+  .sub b{color:var(--ink);font-weight:600}
+  .bar{max-width:1400px;margin:18px auto 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .tab{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+    background:var(--panel);border:2px solid var(--line);border-radius:999px;padding:9px 16px;
+    box-shadow:2px 2px 0 var(--shadow);transition:transform .06s, background .15s}
+  .tab:hover{transform:translate(-1px,-1px)}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper);box-shadow:2px 2px 0 var(--shadow)}
+  .tab small{display:block;font-family:"Public Sans";font-weight:400;font-size:10.5px;letter-spacing:.02em;opacity:.7;text-transform:uppercase}
+  .spacer{flex:1}
+  .btn{font-family:"Public Sans";font-weight:600;font-size:13px;cursor:pointer;background:var(--panel);
+    border:2px solid var(--line);border-radius:8px;padding:8px 13px;box-shadow:2px 2px 0 var(--shadow)}
+  .btn:hover{transform:translate(-1px,-1px)}
+  .btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--shadow)}
+  .meta{max-width:1400px;margin:14px auto 0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .meta .pname{font-family:"Bricolage Grotesque";font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .meta .pgoal{color:var(--ink-soft);font-size:14px}
+  .saved{font-size:12px;color:var(--ink-soft)}
+  .principal{max-width:1400px;margin:14px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.principal{grid-template-columns:1fr}}
+  .principal .pbox{background:var(--panel);border:2px solid var(--line);border-radius:12px;box-shadow:4px 4px 0 var(--shadow);padding:14px 16px}
+  .principal .plab{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .principal .phint{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 9px}
+  .principal .pval{font-size:13.5px;line-height:1.55;outline:none;white-space:pre-wrap;min-height:20px}
+  .principal .pval:focus{background:#fff;border-radius:4px}
+  .p8020{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .p8020 li{display:flex;gap:9px;align-items:baseline;font-size:14px;line-height:1.3}
+  .p8020 .n{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:12px;color:var(--paper);background:var(--ink);width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .p8020 span{color:var(--ink-soft)}
+  .mix{margin-top:14px}
+  .mix .mlab{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:5px}
+  .mix .bar{display:flex;height:28px;border:2px solid var(--line);border-radius:7px;overflow:hidden;font-size:11px;font-weight:700}
+  .mix .bar>div{display:flex;align-items:center;justify-content:center;color:#fff;border-right:2px solid var(--line);white-space:nowrap;overflow:hidden}
+  .mix .bar>div:last-child{border-right:none}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips .chip{display:inline-flex;align-items:center;gap:7px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600}
+  .chips .chip .cn{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;color:var(--ink-soft);font-size:11px}
+  .tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  @media(max-width:760px){.tipos{grid-template-columns:1fr}}
+  .tipo{background:var(--paper);border:1.5px solid var(--line);border-top:5px solid var(--line);border-radius:8px;padding:11px 12px}
+  .tipo .th{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .tipo .th b{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:15px}
+  .tipo .th span{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:14px;color:var(--ink-soft)}
+  .tipo p{margin:0;font-size:12.5px;line-height:1.45}
+  .producao{max-width:1400px;margin:14px auto 0}
+  .producao .pbox{background:var(--panel);border:2px solid var(--line);border-radius:12px;box-shadow:4px 4px 0 var(--shadow);padding:14px 16px}
+  .flow{margin-top:14px}
+  .flowname{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .flowname i{width:11px;height:11px;border-radius:3px;border:1.5px solid var(--line);flex:none}
+  .pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+  .pipe .step{display:flex;align-items:center;gap:8px;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:8px 11px;font-size:13px;font-weight:600}
+  .pipe .step .sn{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:11px;color:var(--paper);background:var(--ink);width:19px;height:19px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+  .fb{margin-top:14px;border-top:2px solid var(--line);padding-top:12px}
+  .fb .fbtitle{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:15px;margin-bottom:7px}
+  .fb .fblist{margin:0 0 13px;padding-left:18px;font-size:13px;line-height:1.5}
+  .champ{display:flex;flex-direction:column;gap:6px}
+  .champrow{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center}
+  .champrow>span:first-child{font-weight:600;font-size:13px}
+  .champhead>span{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700}
+  .champ .cval{font-size:13px;outline:none;background:var(--paper);border:1px dashed var(--ink-soft);border-radius:5px;padding:4px 8px;min-height:26px}
+  .champ .cval:focus{border-style:solid;background:#fff}
+  .jogo{max-width:1400px;margin:16px auto 0;background:var(--ink);color:var(--paper);border:2px solid var(--line);border-radius:10px;box-shadow:4px 4px 0 var(--shadow);padding:12px 15px}
+  .jogo .lab{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--viral);margin-bottom:4px}
+  .jogo .val{font-size:14px;line-height:1.5;outline:none;white-space:pre-wrap;min-height:20px}
+  .jogo .val:focus{background:#2a241f;border-radius:4px}
+  .prem{max-width:1400px;margin:14px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:760px){.prem{grid-template-columns:1fr}}
+  .prem .box{background:var(--panel);border:2px solid var(--line);border-radius:10px;box-shadow:3px 3px 0 var(--shadow);padding:11px 13px}
+  .prem .lab{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;display:flex;align-items:center;gap:7px}
+  .prem .lab i{width:11px;height:11px;border-radius:3px;border:1.5px solid var(--line);flex:none}
+  .prem .hint{font-size:10.5px;color:var(--ink-soft);margin:0 0 6px 18px;line-height:1.2}
+  .prem .val{font-size:13.5px;line-height:1.45;outline:none;white-space:pre-wrap;min-height:19px}
+  .prem .val:focus{background:#fff}
+  main{max-width:1400px;margin:14px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:1050px){main{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){main{grid-template-columns:1fr}}
+  .col{background:var(--panel);border:2px solid var(--line);border-radius:var(--radius);
+    box-shadow:4px 4px 0 var(--shadow);display:flex;flex-direction:column;min-height:180px;overflow:hidden}
+  .col-h{padding:11px 13px;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:9px}
+  .dot{width:13px;height:13px;border-radius:3px;border:2px solid var(--line);flex:none}
+  .col-h .t{font-family:"Bricolage Grotesque";font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .col-h .d{font-size:11px;color:var(--ink-soft);line-height:1.2}
+  .col[data-b="viral"] .dot{background:var(--viral)} .col[data-b="quem"] .dot{background:var(--quem)}
+  .col[data-b="faco"] .dot{background:var(--faco)} .col[data-b="vendo"] .dot{background:var(--vendo)}
+  .cards{padding:10px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .card{background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px 8px;
+    position:relative;font-size:13.5px;line-height:1.42}
+  .card .txt{outline:none;white-space:pre-wrap;min-height:19px}
+  .card .txt:focus{background:#fff}
+  .card .x{position:absolute;top:5px;right:6px;border:none;background:none;cursor:pointer;color:var(--ink-soft);
+    font-size:15px;line-height:1;padding:2px;opacity:0;transition:opacity .12s}
+  .card:hover .x{opacity:1}
+  .card .x:hover{color:var(--viral)}
+  .add{border:1.5px dashed var(--ink-soft);background:transparent;color:var(--ink-soft);border-radius:8px;
+    padding:8px;cursor:pointer;font-family:"Public Sans";font-weight:600;font-size:12.5px;text-align:left}
+  .add:hover{border-color:var(--ink);color:var(--ink)}
+  /* Publicar no Instagram (só aparece dentro do CRM, para quem tem o módulo Conteúdo) */
+  .card .ig{display:none;margin-top:7px;font-family:"Public Sans";font-weight:600;font-size:11.5px;cursor:pointer;
+    background:var(--panel);border:1.5px solid var(--line);border-radius:6px;padding:4px 8px;box-shadow:1px 1px 0 var(--shadow)}
+  body.pode-publicar .card .ig{display:inline-block}
+  .card .ig:hover{transform:translate(-1px,-1px)}
+  .card .pub{display:none;margin-top:6px;font-size:11.5px;line-height:1.35;border-radius:6px;padding:4px 7px;border:1.5px solid var(--line)}
+  .card .pub.on{display:block}
+  .card .pub a{color:inherit;font-weight:700}
+  .card .pub.agendado,.card .pub.enviando,.card .pub.publicando{background:#FFF4D6}
+  .card .pub.publicado{background:#DDF2E3}
+  .card .pub.erro{background:#FBE0D8}
+  .card .pub.cancelado{background:#ECE8E1;color:var(--ink-soft)}
+  footer{max-width:1400px;margin:22px auto 0;color:var(--ink-soft);font-size:12.5px;line-height:1.5}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:11px;height:11px;border-radius:3px;border:1.5px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">Divisão Alfredo Soares · 5 perfis</div>
+  <h1>Board de Conteúdo pra Gravar</h1>
+  <p class="sub">Cada perfil dividido em <b>Viral</b> (fura bolha), <b>Quem sou eu</b> (conexão), <b>O que eu faço</b> (método) e <b>O que eu vendo</b> (oferta e prova). Clica no card pra editar, salva sozinho. Já vem pré-preenchido com o que a gente montou.</p>
+</header>
+
+<div class="jogo"><div class="lab">O jogo</div><div class="val" id="jogoval" contenteditable="true"></div></div>
+
+<section class="principal">
+  <div class="pbox" style="grid-column:1/-1">
+    <div class="plab">Os 3 tipos de conteúdo</div>
+    <div class="phint">somados = o que o expert É (a característica principal em 1 frase) · meta: achar o formato campeão de cada expert</div>
+    <div class="mix" style="margin-top:12px">
+      <div class="bar">
+        <div style="width:70%;background:#E0532B">Extraordinário 70</div>
+        <div style="width:20%;background:#B87514">Método 20</div>
+        <div style="width:10%;background:#1F7A72">Quem é 10</div>
+      </div>
+    </div>
+    <div class="tipos">
+      <div class="tipo" style="border-top-color:#E0532B">
+        <div class="th"><b>Extraordinário</b><span>70%</span></div>
+        <p>Fala com o que o expert e o ICP acreditam. Posicionamento, polaridade, autenticidade muito forte. Mostra algo que você tem (desejo) que o ICP ainda não tem.</p>
+      </div>
+      <div class="tipo" style="border-top-color:#B87514">
+        <div class="th"><b>Método</b><span>20%</span></div>
+        <p>Autoridade: o "como eu faço". É testando aqui que se acha o formato campeão.</p>
+      </div>
+      <div class="tipo" style="border-top-color:#1F7A72">
+        <div class="th"><b>Quem é você</b><span>10%</span></div>
+        <p>Princípios e quem você é.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="principal" style="margin-top:14px">
+  <div class="pbox" style="grid-column:1/-1">
+    <div class="plab">Slug de cada projeto</div>
+    <div class="phint">identificador de cada projeto · vira URL quando o board for hospedado</div>
+    <div class="champ" style="margin-top:10px">
+      <div class="champrow"><span>Breno Fit</span><div class="cval" contenteditable="true" data-save="slug-breno-fit">breno-fitness</div></div>
+      <div class="champrow"><span>Breno Impl</span><div class="cval" contenteditable="true" data-save="slug-breno-impl">breno-implementacao</div></div>
+      <div class="champrow"><span>Breno Emp</span><div class="cval" contenteditable="true" data-save="slug-breno-emp">breno-empresario</div></div>
+      <div class="champrow"><span>Gabi Fit</span><div class="cval" contenteditable="true" data-save="slug-gabi-fit">gabi-fitness</div></div>
+      <div class="champrow"><span>Gabi Emp</span><div class="cval" contenteditable="true" data-save="slug-gabi-emp">gabi-empresaria</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="producao">
+  <div class="pbox">
+    <div class="plab">Produção do time (interno)</div>
+    <div class="phint">fluxo por perfil · toda semana fecha no feedback</div>
+
+    <div class="flow">
+      <div class="flowname"><i style="background:#E0532B"></i>Fluxo Breno (Fitness)</div>
+      <div class="pipe">
+        <div class="step"><span class="sn">1</span>Maria Clara manda os vídeos</div>
+        <div class="step"><span class="sn">2</span>Breno grava</div>
+        <div class="step"><span class="sn">3</span>Manda pro Matheus</div>
+        <div class="step"><span class="sn">4</span>Matheus manda pro Daniel</div>
+        <div class="step"><span class="sn">5</span>Postar</div>
+        <div class="step"><span class="sn">6</span>Matheus analisa</div>
+        <div class="step"><span class="sn">7</span>Próximo ciclo: alinha com Breno ou Ferrari</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flowname"><i style="background:#1F7A72"></i>Fluxo Gabi</div>
+      <div class="pipe">
+        <div class="step"><span class="sn">1</span>Gabi seleciona a copy</div>
+        <div class="step"><span class="sn">2</span>Conversa com Matheus</div>
+        <div class="step"><span class="sn">3</span>Grava</div>
+        <div class="step"><span class="sn">4</span>Matheus edita</div>
+        <div class="step"><span class="sn">5</span>Volta pra Gabi</div>
+        <div class="step"><span class="sn">6</span>Gabi preenche</div>
+      </div>
+    </div>
+
+    <div class="fb">
+      <div class="fbtitle">Feedback semanal — avaliar todos os conteúdos</div>
+      <ul class="fblist">
+        <li>Revisar cada conteúdo postado na semana, perfil por perfil.</li>
+        <li>Olhar a métrica que importa: retenção, alcance de não-seguidor, salvamento, DM e comentário.</li>
+        <li>Marcar o formato que performou melhor em cada perfil.</li>
+        <li>Repetir o campeão na semana seguinte, cortar o que não andou.</li>
+      </ul>
+      <div class="champ">
+        <div class="champrow champhead"><span>Perfil</span><span>Formato campeão da semana</span></div>
+        <div class="champrow"><span>Breno Fit</span><div class="cval" contenteditable="true" data-save="champ-breno-fit"></div></div>
+        <div class="champrow"><span>Breno Impl</span><div class="cval" contenteditable="true" data-save="champ-breno-impl"></div></div>
+        <div class="champrow"><span>Breno Emp</span><div class="cval" contenteditable="true" data-save="champ-breno-emp"></div></div>
+        <div class="champrow"><span>Gabi Fit</span><div class="cval" contenteditable="true" data-save="champ-gabi-fit"></div></div>
+        <div class="champrow"><span>Gabi Emp</span><div class="cval" contenteditable="true" data-save="champ-gabi-emp"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<nav class="bar" id="tabs" role="tablist"></nav>
+
+<div class="meta">
+  <span class="pname" id="pname"></span>
+  <span class="pgoal" id="pgoal"></span>
+  <span class="spacer"></span>
+  <span class="saved" id="saved">salvo automático</span>
+  <button class="btn" id="exportBtn">Exportar tudo (.md)</button>
+  <button class="btn" id="resetBtn">Restaurar base</button>
+</div>
+
+<section class="prem" id="prem"></section>
+
+<main id="board"></main>
+
+<footer>
+  <div class="legend">
+    <span><i style="background:var(--viral)"></i> Viral: universo amplo, sem jargão. Traz gente nova.</span>
+    <span><i style="background:var(--quem)"></i> Quem sou eu: história, bastidor, jornada. Cria vínculo.</span>
+    <span><i style="background:var(--faco)"></i> O que eu faço: método, o "o quê" (não o "como"). Prova domínio.</span>
+    <span><i style="background:var(--vendo)"></i> O que eu vendo: oferta, prova social, CTA.</span>
+  </div>
+</footer>
+
+<script>
+const BUCKETS=[
+  {id:"viral",t:"Viral",d:"fura bolha",color:"#E0532B"},
+  {id:"quem",t:"Quem sou eu",d:"conexão",color:"#1F7A72"},
+  {id:"faco",t:"O que eu faço",d:"método",color:"#B87514"},
+  {id:"vendo",t:"O que eu vendo",d:"oferta + prova",color:"#2E7D4F"},
+];
+
+const BASE={
+  "breno-fit":{name:"Breno · Fitness Consultoria",short:"Breno Fit",goal:"personal + nutri · consultoria B2C (falsa magra)",
+    pos:"Pra ter um corpo slim e definido numa vida real, o Breno é a melhor escolha. A falsa magra não precisa emagrecer, precisa definir.",
+    sent:"Finalmente alguém que entende que meu problema não é peso, é forma. Alívio e esperança concreta.",
+    aut:"Antes/depois de composição (mesma balança, corpo diferente), treino e dieta na mesma mão, prints de aluna reais.",
+    carac:"Vive o físico, entende a frustração de treinar e não definir, fala a língua de quem já tentou de tudo.",
+    extra:"O corpo definido de verdade + o domínio técnico (treino e dieta na mesma mão) que a aluna ainda não tem mas quer.",
+    desejo:"Ter o corpo firme e definido sem viver de dieta e cardio; se olhar no espelho e gostar; parar de ser magra flácida.",
+    pol:"Contra a cultura de emagrecimento: 'você não precisa emagrecer', 'cardio não define', 'comer pouco te deixa flácida'.",cards:{
+    viral:["Magra não é definida. Você não precisa emagrecer, precisa mudar de composição.","A balança te engana: o problema nunca foi peso, foi composição.","Cardio não define. Só te deixa menor e mole.","3 sinais de que você é uma falsa magra.","React de trend de dieta maluca / jejum extremo."],
+    quem:["Minha história: por que sou personal E nutri, e por que juntei os dois.","O erro que eu cometia com aluna antes de entender composição.","Por que eu parei de prometer emagrecimento e passei a entregar definição."],
+    faco:["Como eu leio a composição corporal de uma aluna (o que a balança não mostra).","Como monto treino + dieta pra definir comendo MAIS, não menos.","Por que a maioria treina certo e come errado pra esse objetivo."],
+    vendo:["Documentar os cases das alunas como série: registrar a evolução de composição semana a semana, não só o resultado final.","Consultoria online (dieta + treino) pra corpo definido.","Antes/depois de COMPOSIÇÃO (mesmo peso, corpo diferente).","Print de aluna no direct, cru, sem edição.","CTA: como entrar na consultoria."]}},
+  "breno-impl":{name:"Breno · Implementação",short:"Breno Impl",goal:"vende implementação de sistema pra personal e nutri",
+    pos:"Pra sair do troca-hora-por-dinheiro e virar operação que escala, o Breno é a melhor escolha. Ele INSTALA o sistema, não dá aula.",
+    sent:"Ele já viveu o meu caos e resolveu. Não é teoria. Dá vontade de sair do teto agora.",
+    aut:"Painel e números da própria operação (2-4 planos/dia, 644 conversas, 3 em 10 fecha), tempo por dieta que despencou.",
+    carac:"Foi personal lotado ganhando mal e construiu o sistema na mão. Vende com a própria boca. Espelho do profissional travado no teto.",
+    extra:"A operação que escala (esteira + painel) que o personal ainda não tem mas quer: atender o dobro sem dobrar a hora.",
+    desejo:"Sair do troca-hora-por-dinheiro, escalar sem perder qualidade, ter negócio e não emprego.",
+    pol:"Contra o artesanato e o 'meu método é único': 'você não tem negócio, tem um emprego que você mesmo criou'.",cards:{
+    viral:["Profissional bom que ganha mal: o teto de trocar hora por dinheiro.","Você não tem um negócio. Tem um emprego que você mesmo criou.","Duas horas montando o que um sistema monta em dois minutos.","O dia que você ficar doente, sua consultoria inteira para."],
+    quem:["Eu atendia com a agenda lotada ganhando mal. Demorei pra entender o porquê.","Como eu travei no teto sendo bom tecnicamente.","O dia que montei a primeira esteira e parei de refazer tudo na mão."],
+    faco:["Como funciona a esteira que entrega treino e dieta padronizado.","O que dá pra sistematizar sem perder a personalização.","Por que 'meu método é único' é exatamente o que trava a escala."],
+    vendo:["Documentar os cases de quem implementou: operação, tempo e faturamento antes/depois, virando série de prova.","Implementação do sistema pra personal/nutri escalar.","Case: profissional que dobrou aluno sem dobrar hora.","Print de quem cortou o tempo por dieta de 2h pra 15min.","CTA: comenta ESTEIRA (checar automação de DM)."]}},
+  "breno-emp":{name:"Breno · Empresário",short:"Breno Emp",goal:"vende para empresário (funil + processo comercial)",
+    pos:"Pra fazer produto bom virar venda previsível, o Breno é a melhor escolha. Faturamento é processo, não sorte.",
+    sent:"Meu problema não é produto nem esforço, é processo. Clareza e fim da culpa.",
+    aut:"Processo próprio rodando, caso de cliente com número, o achismo nomeado como inimigo.",
+    carac:"Construiu na mão, sem herança, atende e fecha com a própria boca. Treino como base da disciplina. Espelho do dono que faz acontecer.",
+    extra:"O Painel da Operação e o processo comercial que faz produto bom virar venda previsível, que o empresário ainda não tem mas quer.",
+    desejo:"Faturamento previsível, crescer sem estar dentro de tudo, padrão de vida que a profissão sustenta com a família junto.",
+    pol:"Contra o achismo e o mentor desqualificado: 'você não precisa de mais cliente, precisa parar de perder os que já chegam'.",cards:{
+    viral:["Negócio bom que vende mal: o problema nunca é o produto.","Indicação não é estratégia. É sorte com nome bonito.","Funil não é página bonita. É sequência de decisão.","Se você não sabe quanto fatura mês que vem, é aposta, não negócio."],
+    quem:["Como eu saí de vender no improviso pra vender por processo.","O que me fez parar de depender de indicação.","O erro comercial que quase toda empresa boa comete."],
+    faco:["A sequência de decisão que leva o estranho até o 'toma meu dinheiro'.","Por que jogar tráfego numa página sem funil é ralo.","Como cada etapa do funil faz o lead dar um passo."],
+    vendo:["Documentar os cases de cliente com número: faturamento antes/depois e o ponto exato que destravou.","Consultoria de funil e processo comercial pra escalar no digital.","Case de cliente: faturamento antes/depois da estrutura.","CTA: comenta FUNIL (checar automação de DM)."]}},
+  "gabi-fit":{name:"Gabi · Pessoal (Fitness)",short:"Gabi Fit",goal:"perfil pessoal multi-pilar · atrai bolha e alimenta a consultoria",
+    pos:"A prova viva de que dá pra ter corpo, fé, família e negócio pela mesma disciplina. Alta performance com propósito, não mulher-troféu.",
+    sent:"Eu quero ser essa mulher inteira: corpo, fé, família e negócio. Admiração que dá pra alcançar.",
+    aut:"Viver o que fala: rotina real, casal, empresa nascendo. Coerência entre estética, fé e performance.",
+    carac:"Vive o que fala: rotina, disciplina, fé, casal, empresa nascendo. Espelho da mulher que quer ser inteira, não só bonita.",
+    extra:"A vida integrada (corpo + fé + família + negócio) rodando junto, que a seguidora deseja mas ainda não tem.",
+    desejo:"Ser mulher de alta performance com corpo, propósito, casamento forte e negócio, sem se perder.",
+    pol:"Contra a motivação vazia e a mulher-troféu: 'motivação acaba na terça, rotina não'; 'parceria, não troféu'.",
+    buckets:[
+      {id:"dir",t:"Premissa & Direção",d:"como comunicar",color:"#6B4FE0"},
+      {id:"reels",t:"Reels · 7/semana",d:"1 por dia, por pilar",color:"#E0532B"},
+      {id:"estatico",t:"Estático",d:"reflexivo + corpo que comunica",color:"#1F7A72"},
+      {id:"story",t:"Story / Ideias",d:"bastidor e listas",color:"#B87514"},
+    ],cards:{
+    dir:["PONTO PRINCIPAL: performance com alinhamento de expectativas.","Mostrar os detalhes de uma vida real (iniciando empresa).","Achar um modelo de falar de desenvolvimento pessoal. Ex: estilo Bruna pós treino, luz visual boa, fazendo algo junto (colocando café no copo, falando pra câmera), em vários cenários: livros, correndo, madrugada, home office.","Cuidado pra não ser vulgar. Conversar com quem você quer atrair.","Subcamadas: família, espiritual, estética e fitness, mentalidade, empresarial."],
+    reels:["1 ESPIRITUAL (mais falado): o cenário comunica tudo. Bíblia junto do MacBook, mostrando correlação com prosperidade. Roupa boa, luz, visual top, definida. Fala da bíblia de forma zero vulgar mas que mostra o físico, conectando com Jesus e com o empresarial.","1 EMPRESARIAL: takes de performance, acelerado, visual, livros, dinâmico, fazendo acontecer, com uma frase nesse sentido.","1 MENTALIDADE (dev pessoal): estilo Bruna, falando suada pós corrida (PRINCIPAL). Formato 2: em casa. Formato 3: sem fala, vídeo na sala/céu com frase impactante.","1 FAMÍLIA: vídeos com o Breno (casal, empresarial, família, espiritual). Casal viralizando tipo Anathool com Junior. Parceria, não mulher troféu. Ex: assunto sobre o poder do livro que tô lendo.","1 ESTÉTICA: vlog da manhã até o trabalho (falar também no meio).","1 ESTÉTICA: carrossel de treino.","1 ESTÉTICA: falando. Faz a receita falando / treinando sozinha / conversando com alguém. Vídeo maior, mostrar autenticidade. Ref: Sofia Bianco."],
+    estatico:["Estático reflexivo (1 foto ou carrossel).","Foto de corpo, mas que precisa COMUNICAR (não só corpo)."],
+    story:["Não é porque vou trabalhar em casa que vou trabalhar igual mulambo.","Pegar cada influencer e nomear a característica que quero de cada uma.","Elementos de imagem.","10 coisas que você quer fazer, escrever no papel."]}},
+  "gabi-emp":{name:"Gabi · Empresária",short:"Gabi Emp",goal:"vende solução de funil e comercial (autoridade em venda)",
+    pos:"Pra quem tem autoridade e não fatura, a Gabi é a melhor escolha. Ela transforma audiência em venda; autoridade sem processo é hobby caro.",
+    sent:"Ser boa não basta. Ela sabe virar isso em dinheiro. Dá urgência e confiança.",
+    aut:"Casos de quem monetizou, a estrutura de funil mostrada por dentro, números de venda.",
+    carac:"Mulher de autoridade que aprendeu a vender. Espelho de quem tem audiência mas não fatura.",
+    extra:"O processo comercial que transforma autoridade em venda, que o expert/atleta ainda não tem mas quer.",
+    desejo:"Viver da própria autoridade, virar seguidor em cliente, faturar sem parecer que só quer vender.",
+    pol:"Contra o 'se eu for bom o cliente vem': 'autoridade não paga boleto, processo de venda paga'.",cards:{
+    viral:["Seu shape/palco não vende sozinho. Autoridade não paga boleto.","Atleta forte, faturamento fraco: falta a ponte.","Seguidor não é cliente. Autoridade não é faturamento."],
+    quem:["Como a Gabi transformou autoridade em negócio.","O que eu achava que venderia sozinho e não vendeu.","A virada de reconhecida pra rentável."],
+    faco:["Como estruturar funil e comercial pra quem já tem audiência.","Por que 'não quero parecer que só quero vender' te mantém quebrado.","O processo que transforma seguidor em cliente."],
+    vendo:["Documentar os cases de quem monetizou autoridade: a virada de reconhecido pra rentável, com número.","Solução de funil e processo comercial.","Case de expert/atleta que monetizou a autoridade.","CTA da oferta comercial."]}},
+};
+
+// ---- ponte com o CRM (só funciona dentro de equipe.brenoxavier.com.br/conteudo; aberto solto, nada muda) ----
+// O CRM manda {fonte:"crm-conteudo", tipo:"config"|"status"}; o board manda {fonte:"board-conteudo", tipo:"publicar"|"pronto"}.
+// card_ref = perfil|coluna|hash(texto): editar o texto depois de publicar solta o selo do card (a lista Agendados continua).
+let PUBS={};
+function hashTexto(t){let h=5381;const s=String(t||"").trim();for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);}
+function cardRef(pk,bkid,txt){return pk+"|"+bkid+"|"+hashTexto(txt);}
+const ROT_PUB={enviando:"Enviando…",agendado:"Agendado",publicando:"Publicando…",publicado:"Publicado",erro:"Erro",cancelado:"Cancelado"};
+function pintarPub(el,ref){
+  const p=PUBS[ref];el.className="pub";el.textContent="";
+  if(!p)return;
+  el.classList.add("on",p.status);
+  let t=(ROT_PUB[p.status]||p.status)+(p.conta?" · @"+p.conta:"");
+  if(p.status==="agendado"&&p.quando)t+=" · "+new Date(p.quando).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
+  el.appendChild(document.createTextNode(t));
+  if(p.status==="publicado"&&p.link&&/^https:\/\//.test(p.link)){
+    el.appendChild(document.createTextNode(" · "));
+    const a=document.createElement("a");a.href=p.link;a.target="_blank";a.rel="noopener noreferrer";a.textContent="ver post";el.appendChild(a);
+  }
+  if(p.status==="erro"&&p.erro)el.appendChild(document.createTextNode(": "+p.erro));
+}
+window.addEventListener("message",ev=>{
+  if(ev.source!==window.parent||!ev.data||ev.data.fonte!=="crm-conteudo")return;
+  if(ev.data.tipo==="config"){document.body.classList.toggle("pode-publicar",!!ev.data.podePublicar);}
+  if(ev.data.tipo==="status"){PUBS=ev.data.itens||{};document.querySelectorAll(".card").forEach(c=>{const el=c.querySelector(".pub");if(el)pintarPub(el,c.dataset.ref);});}
+});
+function avisarCrm(msg){if(window.parent&&window.parent!==window)window.parent.postMessage(Object.assign({fonte:"board-conteudo"},msg),"*");}
+
+const KEY="board-conteudo-breno-v5";
+let data=load();
+let active=Object.keys(BASE)[0];
+
+const JKEY=KEY+"-jogo";
+const JDEF="Fazer demanda e ganhar poder pra cobrar mais caro. Todo conteúdo ou cria desejo (demanda) ou eleva o valor percebido (o preço que dá pra cobrar). Se não faz nem um nem outro, não posta.";
+function initJogo(){
+  const el=document.getElementById("jogoval");
+  try{el.textContent=localStorage.getItem(JKEY)||JDEF;}catch(e){el.textContent=JDEF;}
+  el.oninput=()=>{try{localStorage.setItem(JKEY,el.textContent);flash();}catch(e){}};
+}
+function bindSaves(){
+  document.querySelectorAll('[data-save]').forEach(el=>{
+    const k=KEY+"-"+el.getAttribute("data-save");
+    try{const v=localStorage.getItem(k);if(v!==null)el.textContent=v;}catch(e){}
+    el.oninput=()=>{try{localStorage.setItem(k,el.textContent);flash();}catch(e){}};
+  });
+}
+
+const P8020_MD="- Interseção EU∩ICP (90-95% do que posta)\n- Prova documentada (1 case por semana)\n- Polaridade (opinião que toma lado)\n- 1 tema-mãe vira vários formatos\n- Cria demanda ou eleva preço, senão corta\n- Mix ticket alto: 40% prova / 25% mecanismo / 20% polarização / 15% identidade";
+const PDEF_MD="ICP · Posicionamento · Interseção · Extraordinário · Inimigo · Prova nativa · Oferta/Ticket · Polaridade · Voz/Travas · Estética";
+
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}return structuredClone(BASE);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));flash();}catch(e){document.getElementById("saved").textContent="sem salvar (abra o arquivo, não arraste)";}}
+let ft;function flash(){const s=document.getElementById("saved");s.textContent="salvo ✓";clearTimeout(ft);ft=setTimeout(()=>s.textContent="salvo automático",1200);}
+
+function renderTabs(){
+  const n=document.getElementById("tabs");n.innerHTML="";
+  Object.entries(data).forEach(([k,p])=>{
+    const b=document.createElement("button");b.className="tab";b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",k===active);
+    b.innerHTML=p.short+"<small>"+(k.startsWith("breno")?"Breno":"Gabi")+"</small>";
+    b.onclick=()=>{active=k;renderTabs();renderBoard();};
+    n.appendChild(b);
+  });
+}
+const PREM=[
+  {k:"pos",lab:"Posicionamento",hint:"o que quero que entendam que ela É",color:"#6B4FE0"},
+  {k:"carac",lab:"Características",hint:"o que linka com o ICP = autenticidade (espelho)",color:"#1F7A72"},
+  {k:"extra",lab:"Extraordinário",hint:"o que EU tenho e o ICP ainda não tem, mas deseja",color:"#E0532B"},
+  {k:"desejo",lab:"Desejos do ICP",hint:"o que ele mais quer (o destino)",color:"#B87514"},
+  {k:"sent",lab:"O que a pessoa sente",hint:"a premissa emocional de cada conteúdo",color:"#C2456A"},
+  {k:"aut",lab:"Como vira autoridade",hint:"o que o conteúdo prova",color:"#2E7D4F"},
+  {k:"pol",lab:"Polaridade / opinião",hint:"toma um lado, divide, obrigatório",color:"#3B4A8C"},
+];
+function renderPrem(){
+  const p=data[active];const n=document.getElementById("prem");n.innerHTML="";
+  PREM.forEach(pr=>{
+    const box=document.createElement("div");box.className="box";
+    box.innerHTML='<div class="lab"><i style="background:'+pr.color+'"></i>'+pr.lab+'</div><div class="hint">'+pr.hint+'</div>';
+    const v=document.createElement("div");v.className="val";v.contentEditable="true";v.textContent=p[pr.k]||"";
+    v.oninput=()=>{data[active][pr.k]=v.textContent;save();};
+    box.appendChild(v);n.appendChild(box);
+  });
+}
+function renderBoard(){
+  const p=data[active];
+  document.getElementById("pname").textContent=p.name;
+  document.getElementById("pgoal").textContent="· "+p.goal;
+  renderPrem();
+  const m=document.getElementById("board");m.innerHTML="";
+  (p.buckets||BUCKETS).forEach(bk=>{
+    const col=document.createElement("section");col.className="col";col.dataset.b=bk.id;
+    const h=document.createElement("div");h.className="col-h";
+    h.innerHTML='<span class="dot" style="background:'+(bk.color||'#999')+'"></span><div><div class="t">'+bk.t+'</div><div class="d">'+bk.d+'</div></div>';
+    col.appendChild(h);
+    const cc=document.createElement("div");cc.className="cards";
+    (p.cards[bk.id]||[]).forEach((txt,i)=>cc.appendChild(mkCard(bk.id,i,txt)));
+    const add=document.createElement("button");add.className="add";add.textContent="+ Adicionar ideia";
+    add.onclick=()=>{p.cards[bk.id].push("");save();renderBoard();
+      const cards=document.querySelectorAll('.col[data-b="'+bk.id+'"] .txt');cards[cards.length-1].focus();};
+    cc.appendChild(add);col.appendChild(cc);m.appendChild(col);
+  });
+}
+function mkCard(bkid,i,txt){
+  const c=document.createElement("div");c.className="card";c.dataset.ref=cardRef(active,bkid,txt);
+  const t=document.createElement("div");t.className="txt";t.contentEditable="true";t.textContent=txt;
+  const pub=document.createElement("div");pub.className="pub";
+  t.oninput=()=>{data[active].cards[bkid][i]=t.textContent;save();c.dataset.ref=cardRef(active,bkid,t.textContent);pintarPub(pub,c.dataset.ref);};
+  const x=document.createElement("button");x.className="x";x.innerHTML="&times;";x.title="Excluir";
+  x.onclick=()=>{data[active].cards[bkid].splice(i,1);save();renderBoard();};
+  const ig=document.createElement("button");ig.className="ig";ig.type="button";ig.textContent="Publicar no Instagram";
+  ig.onclick=()=>{const bk=(data[active].buckets||BUCKETS).find(b=>b.id===bkid);
+    avisarCrm({tipo:"publicar",card_ref:c.dataset.ref,perfil:active,perfil_nome:data[active].name,coluna:bk?bk.t:bkid,texto:t.textContent});};
+  c.appendChild(t);c.appendChild(x);c.appendChild(ig);c.appendChild(pub);pintarPub(pub,c.dataset.ref);return c;
+}
+
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("Restaurar a base original deste perfil? Suas edições nele serão perdidas."))
+  {data[active]=structuredClone(BASE[active]);save();renderBoard();}
+};
+document.getElementById("exportBtn").onclick=()=>{
+  let md="# Board de Conteúdo — Breno & Gabi\n\n";
+  try{md+="> **O jogo:** "+(localStorage.getItem(JKEY)||JDEF)+"\n\n";}catch(e){md+="> **O jogo:** "+JDEF+"\n\n";}
+  md+="## Os 3 tipos de conteúdo (por expert)\nSomados = o que o expert É (1 frase). Meta: achar o formato campeão.\n- Extraordinário 70%: fala com o que expert e ICP acreditam; posicionamento, polaridade, autenticidade; mostra algo que você tem (desejo) que o ICP não tem.\n- Método 20%: autoridade, o como eu faço (achar formato).\n- Quem é você 10%: princípios, quem você é.\n\n";
+  md+="## Slug de cada projeto\n- Breno Fit: breno-fitness\n- Breno Impl: breno-implementacao\n- Breno Emp: breno-empresario\n- Gabi Fit: gabi-fitness\n- Gabi Emp: gabi-empresaria\n\n";
+  md+="## Produção do time (interno)\nFluxo Breno (Fitness): Maria Clara manda os vídeos > Breno grava > Matheus > Daniel > Postar > Matheus analisa > próximo ciclo alinha com Breno ou Ferrari.\nFluxo Gabi: Gabi seleciona a copy > conversa com Matheus > grava > Matheus edita > volta pra Gabi > Gabi preenche.\nToda semana: avaliar todos os conteúdos por perfil e marcar o formato campeão de cada um.\n\n";
+  Object.values(data).forEach(p=>{md+="## "+p.name+"\n_"+p.goal+"_\n\n";
+    PREM.forEach(pr=>{md+="**"+pr.lab+":** "+(p[pr.k]||"")+"\n\n";});
+    (p.buckets||BUCKETS).forEach(bk=>{md+="### "+bk.t+"\n";(p.cards[bk.id]||[]).forEach(c=>{if(c.trim())md+="- "+c+"\n";});md+="\n";});});
+  const blob=new Blob([md],{type:"text/markdown"});const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="board-conteudo.md";a.click();
+};
+
+renderTabs();renderBoard();initJogo();bindSaves();avisarCrm({tipo:"pronto"});
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+"""Entrega ao CRM, UMA vez, os segredos do LiveKit sem ninguém colar valor no painel.
+
+Lê LIVEKIT_URL/LIVEKIT_API_KEY/LIVEKIT_API_SECRET de /etc/headturbo-livekit/edge-secrets.env e o
+WA_PROXY_SECRET de /etc/headturbo-wa-proxy/proxy.env (já pareado com o CRM), assina o corpo com
+HMAC-SHA256 sobre "<ts>.<nonce>.<corpo>" e faz POST (IPv4, passa pela Cloudflare da Supabase) em
+.../functions/v1/live-pareamento. A função confere IP da VPS, uso único, janela de 5 min e nonce.
+
+Instalado em /usr/local/sbin/headturbo-live-parear (root, 0700). Uso (root, na VPS):
+  sudo headturbo-live-parear             # seco: confere arquivos e se a função está publicada; nada é enviado
+  sudo headturbo-live-parear --executar  # envia uma vez; mostra só status HTTP e o hash curto
+
+Nunca imprime segredo: só nomes, tamanhos, status e o hash (12 hex do sha256 do valor gravado),
+que é recalculado aqui pra conferir que o CRM gravou exatamente o que saiu daqui.
+Rearmar (depois de trocar a chave do LiveKit): o dono roda no SQL  SELECT public.live_pareamento_reabrir();
+"""
+import hashlib, hmac, json, os, secrets, socket, sys, time, urllib.error, urllib.request
+
+URL = "https://SEU_PROJECT_REF.supabase.co/functions/v1/live-pareamento"
+EDGE = "/etc/headturbo-livekit/edge-secrets.env"
+PROXY = "/etc/headturbo-wa-proxy/proxy.env"
+EXECUTAR = "--executar" in sys.argv[1:]
+
+# força IPv4: a função só aceita o IPv4 público da VPS
+_orig = socket.getaddrinfo
+def _so_v4(host, *a, **k):
+    return [r for r in _orig(host, *a, **k) if r[0] == socket.AF_INET]
+socket.getaddrinfo = _so_v4
+
+
+def ler_env(caminho):
+    out = {}
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+            if not linha or linha.startswith("#") or "=" not in linha:
+                continue
+            k, v = linha.split("=", 1)
+            v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                v = v[1:-1]
+            out[k.strip()] = v
+    return out
+
+
+def main():
+    if os.geteuid() != 0:
+        print("PARADO: rode como root (sudo).")
+        return 2
+    try:
+        edge = ler_env(EDGE)
+        proxy = ler_env(PROXY)
+    except OSError as e:
+        print(f"PARADO: não consegui ler {e.filename} ({e.strerror}).")
+        return 2
+
+    url = edge.get("LIVEKIT_URL", "").strip().rstrip("/")
+    chave = edge.get("LIVEKIT_API_KEY", "").strip()
+    segredo_lk = edge.get("LIVEKIT_API_SECRET", "").strip()
+    segredo_hmac = proxy.get("WA_PROXY_SECRET", "").strip()
+    print(f"{EDGE}: LIVEKIT_URL={'ok' if url.startswith('https://') else 'FALTA/sem https'} "
+          f"LIVEKIT_API_KEY={len(chave)} chars LIVEKIT_API_SECRET={len(segredo_lk)} chars")
+    print(f"{PROXY}: WA_PROXY_SECRET={len(segredo_hmac)} chars")
+    if not url.startswith("https://") or not chave or len(segredo_lk) < 32 or len(segredo_hmac) < 32:
+        print("PARADO: falta valor ou está curto. Nada enviado.")
+        return 1
+
+    # mesma forma (ordem e separadores) que a função grava: o hash tem de bater
+    corpo = json.dumps({"url": url, "api_key": chave, "api_secret": segredo_lk}, separators=(",", ":"))
+    hash_local = hashlib.sha256(corpo.encode()).hexdigest()[:12]
+
+    if not EXECUTAR:
+        # GET não grava nada: 405 = publicada, 404 = não publicada
+        try:
+            urllib.request.urlopen(urllib.request.Request(URL, method="GET"), timeout=20)
+            st = 200
+        except urllib.error.HTTPError as e:
+            st = e.code
+        except Exception as e:
+            print(f"live-pareamento: sem resposta ({type(e).__name__})")
+            return 1
+        print(f"live-pareamento: HTTP {st}", "(publicada)" if st == 405 else "(NAO publicada?)")
+        print(f"hash do que seria enviado: {hash_local}")
+        print("SECO: nada foi enviado. Depois de publicar a função e rodar a migration: --executar")
+        return 0
+
+    ts = str(int(time.time()))
+    nonce = secrets.token_urlsafe(24)
+    assinatura = hmac.new(segredo_hmac.encode(), f"{ts}.{nonce}.{corpo}".encode(), hashlib.sha256).hexdigest()
+    req = urllib.request.Request(URL, data=corpo.encode(), method="POST", headers={
+        "Content-Type": "application/json",
+        "x-live-ts": ts,
+        "x-live-nonce": nonce,
+        "x-live-assinatura": assinatura,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            st, resp = r.status, r.read()
+    except urllib.error.HTTPError as e:
+        st, resp = e.code, e.read()
+    except Exception as e:
+        print(f"PARADO: sem resposta ({type(e).__name__})")
+        return 1
+    try:
+        dados = json.loads(resp)
+    except Exception:
+        dados = {}
+
+    if st == 200:
+        hash_remoto = str(dados.get("hash", ""))
+        confere = hmac.compare_digest(hash_remoto, hash_local)
+        print(f"live-pareamento: HTTP 200 hash={hash_remoto} ({'confere' if confere else 'NAO CONFERE com o local ' + hash_local})")
+        return 0 if confere else 1
+    print(f"live-pareamento: HTTP {st} {str(dados.get('error', ''))[:120]}")
+    if st == 410:
+        print("Já pareado. Pra gravar de novo: o dono roda no SQL  SELECT public.live_pareamento_reabrir();")
+    elif st == 403:
+        print("Origem recusada (a função só aceita o IPv4 público da VPS).")
+    elif st == 401:
+        print("Assinatura recusada: relógio da VPS fora (janela 5 min) ou WA_PROXY_SECRET diferente do CRM.")
+    elif st == 404:
+        print("Função não publicada ainda.")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

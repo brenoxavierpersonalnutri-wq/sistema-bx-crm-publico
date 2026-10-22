@@ -1,0 +1,81 @@
+/* Tema escuro dos Roteiros (modal editor + painel lateral do chat).
+   Escopo: só o que estiver dentro de .rot-dark. Redefine os tokens do shadcn ali dentro,
+   então Input, Select, Switch, Badge e Button herdam o tema sem tocar no resto do app.
+   Mesma paleta do tema do CRM (crm-dark.css, 21/10/2026): azul-noite, chumbo e acento amarelo
+   com texto escuro por cima (#0f1115 sobre #f5c518 = 11.3:1). */
+.rot-dark.rot-dark {
+  color-scheme: dark;
+  --background: 220 17% 7%;       /* #0f1115 */
+  --foreground: 216 12% 92%;      /* #e8eaed */
+  --card: 220 16% 11%;            /* #181b21 */
+  --card-foreground: 216 12% 92%;
+  --popover: 220 16% 11%;
+  --popover-foreground: 216 12% 92%;
+  --primary: 46 92% 53%;          /* #f5c518 */
+  --primary-foreground: 220 17% 7%;
+  --secondary: 222 14% 14%;       /* #1e2128 */
+  --secondary-foreground: 216 12% 92%;
+  --muted: 222 14% 14%;
+  --muted-foreground: 218 9% 64%; /* #9aa1ad */
+  --accent: 222 13% 17%;          /* hover de ghost/outline */
+  --accent-foreground: 216 12% 92%;
+  --destructive: 0 84% 66%;       /* legível no escuro (5.9:1 sobre #181b21) */
+  --destructive-foreground: 220 17% 7%;
+  --border: 220 13% 19%;          /* #2a2e36 */
+  --input: 220 12% 23%;
+  --ring: 46 92% 53%;
+
+  /* bolhas e barra do chat dentro do painel */
+  --chat-fundo: #0d0f13;
+  --chat-padrao: rgba(255, 255, 255, 0.025);
+  --chat-barra: #14161b;
+  --chat-bolha-out: #005c4b;
+  --chat-bolha-in: #1e2128;
+  --chat-texto: #e8eaed;
+  --chat-meta: #9aa1ad;
+  --chat-campo: #181b21;
+  --chat-separador: #1a1d23;
+
+  background-color: #0f1115;
+  color: #e8eaed;
+  scrollbar-color: #2f333c transparent;
+  scrollbar-width: thin;
+}
+
+/* campos: um tom acima do fundo, borda sutil, foco com o acento */
+.rot-dark :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, button[role="combobox"]) {
+  background-color: #14161b;
+  border-color: #33373f;
+  color: #e8eaed;
+}
+.rot-dark :is(input, textarea)::placeholder { color: #8b919c; }
+.rot-dark :is(input, textarea, button[role="combobox"]):hover:not(:disabled) { border-color: #3f444e; }
+.rot-dark :is(input, textarea, button[role="combobox"]):focus-visible {
+  border-color: #f5c518;
+  box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.2);
+  --tw-ring-offset-width: 0px;
+  --tw-ring-shadow: 0 0 #0000;
+  outline: none;
+}
+
+/* switch: trilho escuro, bolinha clara */
+.rot-dark button[role="switch"][data-state="unchecked"] { background-color: #2f333c; }
+.rot-dark button[role="switch"] > span { background-color: #e8eaed; }
+
+/* scrollbar escura (WebKit) */
+.rot-dark ::-webkit-scrollbar,
+.rot-dark::-webkit-scrollbar { width: 10px; height: 10px; }
+.rot-dark ::-webkit-scrollbar-track,
+.rot-dark::-webkit-scrollbar-track { background: transparent; }
+.rot-dark ::-webkit-scrollbar-thumb,
+.rot-dark::-webkit-scrollbar-thumb {
+  background-color: #2a2e36;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.rot-dark ::-webkit-scrollbar-thumb:hover,
+.rot-dark::-webkit-scrollbar-thumb:hover { background-color: #3a3f49; }
+
+/* players nativos de áudio no escuro */
+.rot-dark audio { color-scheme: dark; border-radius: 999px; }

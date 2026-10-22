@@ -1,0 +1,449 @@
+[
+ {
+  "nome": "CREPIOCA",
+  "itens": [
+   {
+    "qtd": "20g",
+    "nome": "Tapioca",
+    "ptn": 0.64,
+    "carb": 10.8,
+    "fat": 0.0,
+    "kcal": 45.76
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Ovo inteiro 50g",
+    "ptn": 6.5,
+    "carb": 0.5,
+    "fat": 4.5,
+    "kcal": 68.5
+   },
+   {
+    "qtd": "2 unidades",
+    "nome": "Clara de ovo",
+    "ptn": 9.14,
+    "carb": 0.0,
+    "fat": 0.06,
+    "kcal": 37.1
+   },
+   {
+    "qtd": "25g",
+    "nome": "Queijo cotage",
+    "ptn": 2.55,
+    "carb": 0.5,
+    "fat": 1.25,
+    "kcal": 23.45
+   }
+  ],
+  "kcal": 174.8,
+  "ptn": 18.8,
+  "carb": 11.8,
+  "fat": 5.8,
+  "fib": 0.0
+ },
+ {
+  "nome": "TAPIOCA COM FRANGO",
+  "itens": [
+   {
+    "qtd": "40g",
+    "nome": "Tapioca",
+    "ptn": 1.28,
+    "carb": 21.6,
+    "fat": 0.0,
+    "kcal": 91.52
+   },
+   {
+    "qtd": "50g",
+    "nome": "Peito de frango",
+    "ptn": 15.0,
+    "carb": 0.0,
+    "fat": 1.0,
+    "kcal": 69.0
+   },
+   {
+    "qtd": "10g",
+    "nome": "Requeijão light",
+    "ptn": 1.83,
+    "carb": 0.3,
+    "fat": 1.0,
+    "kcal": 17.53
+   }
+  ],
+  "kcal": 178.1,
+  "ptn": 18.1,
+  "carb": 21.9,
+  "fat": 2.0,
+  "fib": 0.0
+ },
+ {
+  "nome": "CUSCUZ COM OVO E QUEIJO",
+  "itens": [
+   {
+    "qtd": "100g",
+    "nome": "Cuscuz, de milho, cozido com sal",
+    "ptn": 2.2,
+    "carb": 25.3,
+    "fat": 0.7,
+    "kcal": 113.0,
+    "fib": 2.1
+   },
+   {
+    "qtd": "2 unidades",
+    "nome": "Ovo inteiro 50g",
+    "ptn": 13.0,
+    "carb": 1.0,
+    "fat": 9.0,
+    "kcal": 137.0
+   },
+   {
+    "qtd": "20g",
+    "nome": "Queijo minas frescal",
+    "ptn": 3.4,
+    "carb": 0.6,
+    "fat": 4.0,
+    "kcal": 52.0
+   }
+  ],
+  "kcal": 302.0,
+  "ptn": 18.6,
+  "carb": 26.9,
+  "fat": 13.7,
+  "fib": 2.1
+ },
+ {
+  "nome": "SANDUICHE COM FRANGO E PÃO DE SAL",
+  "itens": [
+   {
+    "qtd": "1 unidade",
+    "nome": "Pão de sal francês",
+    "ptn": 3.98,
+    "carb": 29.32,
+    "fat": 1.55,
+    "kcal": 147.16
+   },
+   {
+    "qtd": "50g",
+    "nome": "Peito de frango",
+    "ptn": 15.0,
+    "carb": 0.0,
+    "fat": 1.0,
+    "kcal": 69.0
+   },
+   {
+    "qtd": "15g",
+    "nome": "Requeijão light",
+    "ptn": 2.75,
+    "carb": 0.45,
+    "fat": 1.5,
+    "kcal": 26.3
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Maça",
+    "ptn": 0.37,
+    "carb": 19.7,
+    "fat": 0.0,
+    "kcal": 80.29,
+    "fib": 1.86
+   }
+  ],
+  "kcal": 322.7,
+  "ptn": 22.1,
+  "carb": 49.5,
+  "fat": 4.0,
+  "fib": 1.9
+ },
+ {
+  "nome": "VITAMINA COM PÃO",
+  "itens": [
+   {
+    "qtd": "200ml",
+    "nome": "Leite desnatado",
+    "ptn": 6.4,
+    "carb": 10.0,
+    "fat": 0.0,
+    "kcal": 65.6
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Banana prata",
+    "ptn": 0.86,
+    "carb": 22.36,
+    "fat": 0.0,
+    "kcal": 92.88,
+    "fib": 1.92
+   },
+   {
+    "qtd": "20g",
+    "nome": "Whey Protein",
+    "ptn": 14.0,
+    "carb": 3.07,
+    "fat": 1.33,
+    "kcal": 80.27
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Pão de forma integral",
+    "ptn": 2.25,
+    "carb": 12.5,
+    "fat": 1.0,
+    "kcal": 68.0,
+    "fib": 1.65
+   },
+   {
+    "qtd": "10g",
+    "nome": "Requeijão light",
+    "ptn": 1.83,
+    "carb": 0.3,
+    "fat": 1.0,
+    "kcal": 17.53
+   }
+  ],
+  "kcal": 324.3,
+  "ptn": 25.3,
+  "carb": 48.2,
+  "fat": 3.3,
+  "fib": 3.6
+ },
+ {
+  "nome": "PANQUECA DE BANANA",
+  "itens": [
+   {
+    "qtd": "30g",
+    "nome": "Aveia em flocos",
+    "ptn": 4.18,
+    "carb": 19.99,
+    "fat": 2.55,
+    "kcal": 119.62,
+    "fib": 3.9
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Ovo inteiro 50g",
+    "ptn": 6.5,
+    "carb": 0.5,
+    "fat": 4.5,
+    "kcal": 68.5
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Banana prata",
+    "ptn": 0.86,
+    "carb": 22.36,
+    "fat": 0.0,
+    "kcal": 92.88,
+    "fib": 1.92
+   },
+   {
+    "qtd": "5g",
+    "nome": "Azeite de Oliva extra virgem",
+    "ptn": 0.0,
+    "carb": 0.0,
+    "fat": 5.0,
+    "kcal": 45.0
+   }
+  ],
+  "kcal": 326.0,
+  "ptn": 11.5,
+  "carb": 42.8,
+  "fat": 12.1,
+  "fib": 5.8
+ },
+ {
+  "nome": "RAP 10 ESTILO PIZZA NA AIRFRYER",
+  "itens": [
+   {
+    "qtd": "40g",
+    "nome": "Rap 10",
+    "ptn": 2.7,
+    "carb": 20.0,
+    "fat": 2.8,
+    "kcal": 116.0
+   },
+   {
+    "qtd": "80g",
+    "nome": "Patinho grelhado",
+    "ptn": 28.72,
+    "carb": 0.0,
+    "fat": 5.85,
+    "kcal": 167.53
+   },
+   {
+    "qtd": "30g",
+    "nome": "Queijo mozarela",
+    "ptn": 6.9,
+    "carb": 0.9,
+    "fat": 7.5,
+    "kcal": 98.7
+   },
+   {
+    "qtd": "12g",
+    "nome": "Katchup Heinz",
+    "ptn": 0.0,
+    "carb": 3.3,
+    "fat": 0.0,
+    "kcal": 13.2
+   }
+  ],
+  "kcal": 395.4,
+  "ptn": 38.3,
+  "carb": 24.2,
+  "fat": 16.1,
+  "fib": 0.0
+ },
+ {
+  "nome": "IOGURTE COM WHEY, AVEIA E MORANGO",
+  "itens": [
+   {
+    "qtd": "150g",
+    "nome": "Iogurte natural cálculo breno",
+    "ptn": 8.42,
+    "carb": 13.95,
+    "fat": 8.45,
+    "kcal": 165.56
+   },
+   {
+    "qtd": "20g",
+    "nome": "Whey Protein",
+    "ptn": 14.0,
+    "carb": 3.07,
+    "fat": 1.33,
+    "kcal": 80.27
+   },
+   {
+    "qtd": "30g",
+    "nome": "Aveia em flocos",
+    "ptn": 4.18,
+    "carb": 19.99,
+    "fat": 2.55,
+    "kcal": 119.62,
+    "fib": 3.9
+   },
+   {
+    "qtd": "100g",
+    "nome": "Morango",
+    "ptn": 0.89,
+    "carb": 6.82,
+    "fat": 0.21,
+    "kcal": 32.7,
+    "fib": 1.7
+   }
+  ],
+  "kcal": 398.1,
+  "ptn": 27.5,
+  "carb": 43.8,
+  "fat": 12.5,
+  "fib": 5.6
+ },
+ {
+  "nome": "HAMBURGUER CASEIRO",
+  "itens": [
+   {
+    "qtd": "2 unidades",
+    "nome": "Pão de forma integral",
+    "ptn": 4.5,
+    "carb": 25.0,
+    "fat": 2.0,
+    "kcal": 136.0,
+    "fib": 3.3
+   },
+   {
+    "qtd": "120g",
+    "nome": "Patinho grelhado",
+    "ptn": 43.08,
+    "carb": 0.0,
+    "fat": 8.77,
+    "kcal": 251.3
+   },
+   {
+    "qtd": "30g",
+    "nome": "Queijo meia cura",
+    "ptn": 6.36,
+    "carb": 1.08,
+    "fat": 7.38,
+    "kcal": 96.18
+   },
+   {
+    "qtd": "1 unidade",
+    "nome": "Ovo inteiro 50g",
+    "ptn": 6.5,
+    "carb": 0.5,
+    "fat": 4.5,
+    "kcal": 68.5
+   },
+   {
+    "qtd": "12g",
+    "nome": "Katchup Heinz",
+    "ptn": 0.0,
+    "carb": 3.3,
+    "fat": 0.0,
+    "kcal": 13.2
+   },
+   {
+    "qtd": "12g",
+    "nome": "Mostarda Heinz",
+    "ptn": 0.0,
+    "carb": 0.7,
+    "fat": 0.0,
+    "kcal": 2.8
+   }
+  ],
+  "kcal": 568.0,
+  "ptn": 60.4,
+  "carb": 30.6,
+  "fat": 22.7,
+  "fib": 3.3
+ },
+ {
+  "nome": "COMIDA: ARROZ, FEIJÃO E CARNE",
+  "itens": [
+   {
+    "qtd": "80g",
+    "nome": "Arroz branco cozido",
+    "ptn": 2.02,
+    "carb": 22.45,
+    "fat": 0.18,
+    "kcal": 99.48
+   },
+   {
+    "qtd": "130g",
+    "nome": "Feijão cozido",
+    "ptn": 6.21,
+    "carb": 17.67,
+    "fat": 0.71,
+    "kcal": 101.86,
+    "fib": 11.05
+   },
+   {
+    "qtd": "120g",
+    "nome": "Patinho grelhado",
+    "ptn": 43.08,
+    "carb": 0.0,
+    "fat": 8.77,
+    "kcal": 251.3
+   },
+   {
+    "qtd": "40g",
+    "nome": "Cenoura",
+    "ptn": 0.4,
+    "carb": 3.2,
+    "fat": 0.0,
+    "kcal": 14.4,
+    "fib": 1.28
+   },
+   {
+    "qtd": "2 unidades",
+    "nome": "Mexirica",
+    "ptn": 1.92,
+    "carb": 27.64,
+    "fat": 0.38,
+    "kcal": 121.68
+   }
+  ],
+  "kcal": 588.7,
+  "ptn": 53.6,
+  "carb": 71.0,
+  "fat": 10.0,
+  "fib": 12.3
+ }
+]

@@ -1,0 +1,23 @@
+{
+    "name": "Amostra Teste Fullfunnel",
+    "site": "brenoxavier",
+    "tags": "lead-qualificado-site,nivel-a",
+    "email": "amostra@exemplo.invalid",
+    "nivel": "A",
+    "phone": "+5500900000000",
+    "score": 70,
+    "teste": true,
+    "evento": "lead_qualificado",
+    "origem": "avaliacao",
+    "lead_id": "00000000-0000-4000-8000-000000000000",
+    "utm_term": "amostra",
+    "criado_em": "2026-10-13T12:00:00Z",
+    "instagram": "@amostra.teste",
+    "last_name": "Teste Fullfunnel",
+    "first_name": "Amostra",
+    "utm_medium": "amostra",
+    "utm_source": "amostra",
+    "utm_content": "amostra",
+    "renda_mensal": "5k_8k",
+    "utm_campaign": "amostra"
+}

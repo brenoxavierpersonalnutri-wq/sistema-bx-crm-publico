@@ -1,0 +1,1629 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Mapas — Consultoria Breno Xavier</title>
+
+<style>
+  :root {
+    --ground:#F6F7F9; --surface:#FFFFFF; --sunken:#EDEFF3;
+    --ink:#2B3440; --muted:#6B7684; --hair:#DCE0E7;
+    --c1:#00A88E; --c2:#0091CE; --c3:#EF4B36;
+    --c4:#4666DB; --c5:#E8930C; --c6:#8E44D0;
+    --shadow:0 1px 2px rgba(20,30,50,.05), 0 6px 20px -8px rgba(20,30,50,.16);
+    --grid:rgba(43,52,64,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:#1A1A1C; --surface:#242427; --sunken:#1E1E20;
+    --ink:#DCDDDE; --muted:#8B8B92; --hair:#33333A;
+    --c1:#A882FF; --c2:#4EC9E0; --c3:#E06C6C;
+    --c4:#6C9CE0; --c5:#E0B44E; --c6:#D08BE0;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.85);
+    --grid:rgba(220,221,222,.045);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#1A1A1C; --surface:#242427; --sunken:#1E1E20;
+    --ink:#DCDDDE; --muted:#8B8B92; --hair:#33333A;
+    --c1:#A882FF; --c2:#4EC9E0; --c3:#E06C6C;
+    --c4:#6C9CE0; --c5:#E0B44E; --c6:#D08BE0;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 30px -14px rgba(0,0,0,.85);
+    --grid:rgba(220,221,222,.045);
+  }
+  :root[data-theme="light"] {
+    --ground:#F6F7F9; --surface:#FFFFFF; --sunken:#EDEFF3;
+    --ink:#2B3440; --muted:#6B7684; --hair:#DCE0E7;
+    --c1:#00A88E; --c2:#0091CE; --c3:#EF4B36;
+    --c4:#4666DB; --c5:#E8930C; --c6:#8E44D0;
+    --shadow:0 1px 2px rgba(20,30,50,.05), 0 6px 20px -8px rgba(20,30,50,.16);
+    --grid:rgba(43,52,64,.05);
+  }
+
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family: ui-sans-serif, -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.no-scroll { overflow:hidden; }
+
+  button {
+    font:inherit; font-size:13px; font-weight:550;
+    padding:6px 12px; border-radius:8px;
+    border:1px solid var(--hair); background:var(--surface); color:var(--ink);
+    cursor:pointer; transition:background .12s;
+  }
+  button:hover { background:var(--sunken); }
+  button:focus-visible { outline:2px solid var(--c2); outline-offset:2px; }
+  button.primary { background:var(--ink); color:var(--ground); border-color:var(--ink); }
+  button.primary:hover { opacity:.88; }
+  button.ghost { background:transparent; }
+
+  kbd {
+    font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:10px;
+    padding:2px 5px; border-radius:5px; border:1px solid var(--hair);
+    background:var(--surface); color:var(--ink);
+  }
+
+  /* ---------- biblioteca ---------- */
+
+  #biblioteca { max-width:1080px; margin:0 auto; padding:56px 24px 80px; }
+  .topo { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:36px; }
+  .eyebrow {
+    font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+  }
+  h1 { margin:8px 0 0; font-size:clamp(28px,4vw,40px); letter-spacing:-.025em; font-weight:700; }
+  .sub { margin:8px 0 0; font-size:15px; line-height:1.5; color:var(--muted); max-width:52ch; }
+
+  .grade { display:grid; grid-template-columns:repeat(auto-fill, minmax(268px,1fr)); gap:16px; }
+
+  .cartao {
+    background:var(--surface); border:1px solid var(--hair); border-radius:14px;
+    padding:18px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; gap:12px; min-height:158px;
+    cursor:pointer; transition:transform .12s, border-color .12s;
+    position:relative;
+  }
+  .cartao:hover { transform:translateY(-2px); border-color:color-mix(in srgb, var(--c1) 45%, var(--hair)); }
+  .cartao h3 { margin:0; font-size:16px; letter-spacing:-.01em; font-weight:650; line-height:1.3; }
+  .cartao .meta {
+    margin-top:auto; display:flex; gap:10px; align-items:center;
+    font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; color:var(--muted);
+  }
+  .pontos { display:flex; gap:4px; }
+  .pontos i { width:8px; height:8px; border-radius:50%; display:block; }
+  .acoes { display:flex; gap:6px; opacity:0; transition:opacity .12s; }
+  .cartao:hover .acoes, .cartao:focus-within .acoes { opacity:1; }
+  .acoes button { padding:4px 8px; font-size:11.5px; }
+
+  .novo {
+    border:1.5px dashed var(--hair); background:transparent;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; min-height:158px; border-radius:14px; cursor:pointer;
+    color:var(--muted); font-size:14px; font-weight:550;
+    transition:border-color .12s, color .12s;
+  }
+  .novo:hover { border-color:var(--c1); color:var(--c1); }
+  .novo b { font-size:26px; font-weight:400; line-height:1; }
+
+  .vazio { color:var(--muted); font-size:14px; padding:14px 0; }
+
+  /* ---------- editor ---------- */
+
+  #editor { display:none; }
+  body.editando #biblioteca { display:none; }
+  body.editando #editor { display:block; }
+
+  .bar {
+    position:fixed; top:0; left:0; right:0; z-index:60;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:11px 18px;
+    background:color-mix(in srgb, var(--ground) 86%, transparent);
+    backdrop-filter:saturate(1.4) blur(12px);
+    border-bottom:1px solid var(--hair);
+  }
+  #nomeMapa {
+    font-size:15px; font-weight:650; letter-spacing:-.01em;
+    padding:4px 8px; border-radius:7px; outline:none; margin-right:auto;
+    border:1px solid transparent; min-width:120px;
+  }
+  #nomeMapa:hover { border-color:var(--hair); }
+  #nomeMapa:focus { border-color:var(--c2); background:var(--surface); }
+
+  .keys { display:flex; gap:13px; align-items:center; font-size:11.5px; color:var(--muted); }
+  .keys span { display:flex; gap:5px; align-items:center; white-space:nowrap; }
+
+  .zoombox {
+    position:fixed; right:18px; bottom:18px; z-index:60;
+    display:flex; align-items:center; gap:6px; padding:6px; border-radius:11px;
+    background:color-mix(in srgb, var(--ground) 86%, transparent);
+    backdrop-filter:saturate(1.4) blur(12px);
+    border:1px solid var(--hair); box-shadow:var(--shadow);
+  }
+  .zoombox button { width:32px; height:32px; padding:0; display:grid; place-items:center; font-size:15px; }
+  .zoombox .pct {
+    font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px;
+    color:var(--muted); min-width:44px; text-align:center; font-variant-numeric:tabular-nums;
+  }
+
+  .viewport {
+    position:fixed; inset:55px 0 0 0; overflow:hidden; cursor:grab;
+    background-image:radial-gradient(var(--grid) 1px, transparent 1px);
+    background-size:26px 26px; touch-action:none;
+  }
+  .viewport.panning { cursor:grabbing; }
+  .world { position:absolute; top:0; left:0; width:6000px; height:4000px; transform-origin:0 0; }
+  svg.lines { position:absolute; inset:0; width:6000px; height:4000px; pointer-events:none; overflow:visible; }
+
+  .node {
+    position:absolute; width:220px;
+    background:var(--surface); border:1px solid var(--hair); border-radius:9px;
+    padding:8px 11px 9px; box-shadow:var(--shadow);
+    cursor:grab; touch-action:none;
+  }
+  .node.dragging { cursor:grabbing; box-shadow:0 20px 44px -18px rgba(0,0,0,.5); z-index:20; }
+  .node::before {
+    content:""; position:absolute; left:0; top:7px; bottom:7px;
+    width:3px; border-radius:3px; background:var(--tone);
+  }
+  .node.sel { border-color:var(--tone); box-shadow:0 0 0 2px color-mix(in srgb, var(--tone) 38%, transparent), var(--shadow); }
+  .node.hub { background:var(--ink); color:var(--ground); border-color:var(--ink); }
+  .node.hub::before { display:none; }
+  .node.hub .t { font-size:15px; font-weight:700; color:var(--ground); }
+  .node.hub .d { color:color-mix(in srgb, var(--ground) 70%, transparent); }
+
+  .t { font-size:13px; font-weight:660; line-height:1.28; letter-spacing:-.005em; color:var(--tone); outline:none; }
+  .d { margin-top:4px; font-size:11.5px; line-height:1.4; color:var(--ink); white-space:pre-wrap; outline:none; }
+  .d:empty { display:none; }
+  .node.sel .d:empty { display:block; min-height:14px; }
+  [contenteditable="true"] { cursor:text; user-select:text; }
+
+  .tools { position:absolute; top:-13px; right:10px; display:none; gap:4px; z-index:30; }
+  .node.sel .tools { display:flex; }
+  .tools button { width:26px; height:26px; padding:0; display:grid; place-items:center; font-size:13px; box-shadow:var(--shadow); }
+
+  .swatches { position:absolute; bottom:-12px; right:10px; display:none; gap:4px; z-index:30; }
+  .node.sel .swatches { display:flex; }
+  .sw { width:15px; height:15px; border-radius:50%; border:1.5px solid var(--surface); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.35); }
+
+  dialog {
+    border:1px solid var(--hair); border-radius:14px; padding:24px;
+    background:var(--surface); color:var(--ink); max-width:440px; width:calc(100% - 40px);
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.5);
+  }
+  dialog::backdrop { background:rgba(0,0,0,.45); }
+  dialog h2 { margin:0 0 6px; font-size:17px; letter-spacing:-.01em; }
+  dialog p { margin:0 0 18px; font-size:14px; line-height:1.5; color:var(--muted); }
+  dialog .row { display:flex; gap:8px; justify-content:flex-end; }
+  .modelos { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .modelo {
+    text-align:left; padding:13px 15px; border-radius:11px; width:100%;
+    display:flex; flex-direction:column; gap:3px; align-items:flex-start;
+  }
+  .modelo b { font-size:14px; font-weight:650; }
+  .modelo span { font-size:12.5px; color:var(--muted); line-height:1.4; }
+
+  @media (max-width: 900px) { .keys { display:none; } }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+
+  /* ---------- ferramentas ---------- */
+  .ferramentas { display:flex; align-items:center; gap:4px; }
+  .ferramentas .sep { width:1px; height:20px; background:var(--hair); margin:0 4px; }
+  button.ferr { padding:6px; width:30px; height:30px; display:grid; place-items:center; }
+  button.ferr svg { width:16px; height:16px; display:block; }
+  button.ferr.ativo { background:var(--ink); color:var(--ground); border-color:var(--ink); }
+  #opcoesCaneta { display:flex; align-items:center; gap:4px; }
+  #opcoesCaneta[hidden] { display:none; }
+  .cor { width:18px; height:18px; border-radius:50%; border:2px solid transparent;
+         box-shadow:0 0 0 1px var(--hair) inset; cursor:pointer; padding:0; }
+  .cor.ativo { border-color:var(--ink); box-shadow:none; }
+  .esp { width:26px; height:26px; padding:0; display:grid; place-items:center; }
+  .esp i { display:block; background:var(--ink); border-radius:99px; }
+  .esp.ativo { background:var(--sunken); }
+
+  /* ---------- camadas ---------- */
+  .lines { z-index:0; }
+  #camadaImg { position:absolute; inset:0; z-index:1; }
+  .node { z-index:3; }
+  #draw { position:absolute; top:0; left:0; width:6000px; height:4000px;
+          z-index:4; pointer-events:none; overflow:visible; }
+
+  .img { position:absolute; border-radius:10px; overflow:visible; cursor:grab; }
+  .img img { display:block; width:100%; height:auto; border-radius:10px;
+             box-shadow:var(--shadow); user-select:none; -webkit-user-drag:none; }
+  .img.sel img { outline:2px solid var(--c2); outline-offset:2px; }
+  .img .handle { position:absolute; right:-6px; bottom:-6px; width:14px; height:14px;
+                 border-radius:50%; background:var(--c2); border:2px solid var(--surface);
+                 cursor:nwse-resize; opacity:0; transition:opacity .12s; }
+  .img .delImg { position:absolute; top:-10px; right:-10px; width:22px; height:22px;
+                 border-radius:50%; padding:0; font-size:11px; line-height:1;
+                 display:grid; place-items:center; opacity:0; transition:opacity .12s; }
+  .img:hover .handle, .img:hover .delImg, .img.sel .handle, .img.sel .delImg { opacity:1; }
+
+  body.desenhando .node, body.desenhando .img { pointer-events:none; }
+  body.desenhando .viewport { cursor:crosshair; }
+  body.borrando .viewport { cursor:cell; }
+
+  .fold {
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:20px; height:20px; padding:0; border-radius:50%;
+    font-size:10px; font-weight:750; line-height:1;
+    display:grid; place-items:center; z-index:31;
+    background:var(--surface); color:var(--tone);
+    border:1.5px solid var(--tone); box-shadow:var(--shadow);
+  }
+  .fold:hover { background:var(--tone); color:var(--surface); }
+  .fold-dir { right:-11px; }
+  .fold-esq { left:-11px; }
+
+  .node.alvo-filho  { outline:2px dashed var(--c2); outline-offset:5px; }
+  .node.alvo-antes  { box-shadow:0 -4px 0 -1px var(--c2), var(--shadow); }
+  .node.alvo-depois { box-shadow:0 4px 0 -1px var(--c2), var(--shadow); }
+  .node.dragging    { opacity:.85; }
+
+  /* ---------- aviso ---------- */
+  #aviso { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+           background:var(--ink); color:var(--ground); padding:10px 16px; border-radius:10px;
+           font-size:13px; font-weight:550; box-shadow:var(--shadow); z-index:60;
+           max-width:min(520px, 90vw); text-align:center; }
+  #aviso[hidden] { display:none; }
+</style>
+</head><body>
+
+<!-- ===================== BIBLIOTECA ===================== -->
+<section id="biblioteca">
+  <div class="topo">
+    <div>
+      <div class="eyebrow">Consultoria Breno Xavier</div>
+      <h1>Mapas Mentais</h1>
+      <p class="sub">Abra um mapa para editar, ou comece um novo. Cada mapa fica salvo neste navegador.</p>
+    </div>
+  </div>
+  <div class="grade" id="grade"></div>
+</section>
+
+<!-- ===================== EDITOR ===================== -->
+<section id="editor">
+  <div class="bar">
+    <button id="voltar" class="ghost">← Mapas</button>
+    <div id="nomeMapa" contenteditable="true" spellcheck="false"></div>
+    <div class="keys">
+      <span><kbd>Tab</kbd> filho</span>
+      <span><kbd>Enter</kbd> irmão</span>
+      <span><kbd>F2</kbd> editar</span>
+      <span><kbd>Delete</kbd> apaga</span>
+      <span><kbd>⌘Z</kbd> desfaz</span>
+    </div>
+    <div class="ferramentas">
+      <button class="ferr ativo" data-f="mao" title="Selecionar e mover — V" aria-label="Selecionar">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2l9.5 5.2-4 1.1-1.6 4L3 2z" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="ferr" data-f="caneta" title="Desenhar — D" aria-label="Desenhar">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.2 2.3l2.5 2.5L6 12.5l-3.3.8.8-3.3 7.7-7.7z" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="ferr" data-f="borracha" title="Apagar desenho — E" aria-label="Apagar desenho">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 13H13M3 10.2l4.6-4.6a1.4 1.4 0 012 0l2.8 2.8a1.4 1.4 0 010 2L9.6 13H5.8L3 10.2z" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="opcoesCaneta" hidden>
+        <div class="sep"></div>
+        <div id="paleta"></div>
+        <button class="esp" data-w="3" title="Traço fino"><i style="width:5px;height:5px"></i></button>
+        <button class="esp ativo" data-w="7" title="Traço médio"><i style="width:9px;height:9px"></i></button>
+        <button class="esp" data-w="16" data-marca="1" title="Marca-texto"><i style="width:14px;height:14px;opacity:.45"></i></button>
+      </div>
+      <div class="sep"></div>
+      <button class="ferr" id="btnImg" title="Inserir imagem — também aceita colar e arrastar" aria-label="Inserir imagem">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><circle cx="6" cy="6.5" r="1.1"/><path d="M2.5 11l3.2-3 2.4 2.2L10.6 8l3 3" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="ferr" id="btnOrganizar" title="Organizar o mapa — junta os balões e alinha os ramos" aria-label="Organizar o mapa">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h3M5 8V4h4M5 8v4h4M9 2.6h5v2.8H9zM9 6.6h5v2.8H9zM9 10.6h5v2.8H9z" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="ferr" id="btnTema" title="Alternar tema" aria-label="Alternar tema">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.2"/><path d="M8 2.8v10.4a5.2 5.2 0 000-10.4z" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+    <button id="compartilhar" class="ghost">Compartilhar</button>
+    <button id="export">Baixar</button>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="world" id="world">
+      <svg class="lines" id="lines" aria-hidden="true"></svg>
+      <div id="camadaImg"></div>
+      <svg id="draw" aria-hidden="true"></svg>
+    </div>
+  </div>
+
+  <div class="zoombox">
+    <button id="zout" title="Diminuir" aria-label="Diminuir zoom">−</button>
+    <span class="pct" id="pct">100%</span>
+    <button id="zin" title="Aumentar" aria-label="Aumentar zoom">+</button>
+    <button id="fit" title="Enquadrar tudo" aria-label="Enquadrar tudo">⤢</button>
+  </div>
+</section>
+
+<input type="file" id="arqImg" accept="image/*" multiple hidden>
+<div id="aviso" hidden></div>
+
+<dialog id="dlgNovo">
+  <h2>Novo mapa</h2>
+  <p>Comece do zero ou parta de um modelo já montado.</p>
+  <div class="modelos">
+    <button class="modelo" data-modelo="branco">
+      <b>Mapa em branco</b>
+      <span>Um balão central e nada mais — você constrói do jeito que quiser</span>
+    </button>
+    <button class="modelo" data-modelo="operacao">
+      <b>Operação da Lead</b>
+      <span>O caminho da lead, onde ela some e o que o time faz em cada ponto</span>
+    </button>
+  </div>
+  <div class="row"><button id="novoCancel" class="ghost">Cancelar</button></div>
+</dialog>
+
+<dialog id="dlgConfirma">
+  <h2 id="confTitulo">Apagar</h2>
+  <p id="confTexto"></p>
+  <div class="row">
+    <button id="confCancel" class="ghost">Cancelar</button>
+    <button id="confOk" class="primary">Apagar</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  const CHAVE = "mapas_bx_v1";
+  const ANTIGA = "mapa_operacao_v2";
+  const TONES = ["--c1","--c2","--c3","--c4","--c5","--c6"];
+  const NODE_W = 220;
+
+  const MODELO_OPERACAO = [
+    { id:"hub", parent:null, x:2700, y:1900, tone:"--ink", hub:true,
+      t:"Operação da Lead", d:"Do anúncio à consulta" },
+    { id:"n1", parent:"hub", x:3200, y:1380, tone:"--c1", t:"01 · ELA CHEGA",
+      d:"Clica no anúncio e cai em /avaliacao\nResponde 12 perguntas — o score sai sozinho\nA ≥65 · B ≥50 · C ≥41 · D ≥35\nAbaixo de 35 é desqualificada: vai pro vídeo" },
+    { id:"n2", parent:"hub", x:3200, y:1830, tone:"--c2", t:"02 · ELA AGENDA",
+      d:"Vê a tela de parabéns e escolhe o horário\nAperta o botão verde do WhatsApp\nÉ só aqui que a conversa começa\nNo sistema: data verde + ícone do WhatsApp" },
+    { id:"n3", parent:"hub", x:3200, y:2270, tone:"--c3", t:"03 · ONDE ELA SOME",
+      d:"Qualificou e não agendou → chamar em até 1h\nAgendou e não apertou o WhatsApp → maior fonte de no-show\nQuase 6 em cada 10 param entre o parabéns e o calendário" },
+    { id:"n4", parent:"hub", x:2200, y:1380, tone:"--c4", t:"ROTINA DO DIA",
+      d:"Banco de Dados → Hoje → Qualificadas\nTrabalhar de cima pra baixo, sem pular\nMarcar cada uma na coluna Recuperação\nDia fechado: nenhuma linha sem marcação" },
+    { id:"n5", parent:"hub", x:2200, y:1830, tone:"--c5", t:"COMO LER A TELA",
+      d:"Data verde limpa → agendou, é certeza\nData com “?” → achou pelo telefone, confirme\n✕ vermelho → não chegou no WhatsApp\nDesqualificada em cinza → não é fila" },
+    { id:"n6", parent:"hub", x:2200, y:2270, tone:"--c6", t:"QUEM CHAMAR PRIMEIRO",
+      d:"🔥 Quer começar já — a prioridade é agora\nNível A e B antes de C e D\nRenda 5–8k ou mais antes de ≤ 2k\nScore na beirada + profissão boa vale a ligação" },
+    { id:"n7", parent:"n3", x:3700, y:2270, tone:"--c3", t:"A REGRA QUE MAIS PESA",
+      d:"O volume entra entre 21h e 23h.\nQuem chega à noite só acha horário 2 dias depois.\nA fila da noite é a primeira coisa da manhã." },
+  ];
+
+  const MODELO_BRANCO = [
+    { id:"hub", parent:null, x:2700, y:1900, tone:"--ink", hub:true, t:"Tema central", d:"" },
+  ];
+
+  /* ---------- dados ---------- */
+
+  let mapas = carregar();
+  let atual = null;          // id do mapa aberto
+  let nodes = [];            // balões do mapa aberto
+  let strokes = [];          // traços desenhados à mão
+  let imgs = [];             // imagens soltas no mapa
+  let ferramenta = "mao";    // mao | caneta | borracha
+  let selImg = null;
+  let sel = null;
+  let seq = Date.now();
+  let scale = 1, tx = 0, ty = 0;
+  const passado = [], futuro = [], LIMITE = 60;
+
+  function carregar() {
+    try {
+      const raw = localStorage.getItem(CHAVE);
+      if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) return p; }
+      // primeira vez: aproveita o mapa que já existia na versão anterior
+      const velho = localStorage.getItem(ANTIGA);
+      if (velho) {
+        const n = JSON.parse(velho);
+        if (Array.isArray(n) && n.length) {
+          return [{ id:"m1", nome:"Operação da Lead", atualizado:Date.now(), nodes:n }];
+        }
+      }
+    } catch (e) { /* sem storage */ }
+    return [{ id:"m1", nome:"Operação da Lead", atualizado:Date.now(), nodes:structuredClone(MODELO_OPERACAO) }];
+  }
+  function gravar() {
+    try { localStorage.setItem(CHAVE, JSON.stringify(mapas)); esconderAviso(); }
+    catch (e) { mostrarAviso("Memória do navegador cheia. Apague imagens pesadas ou mapas antigos — as últimas mudanças não foram salvas."); }
+  }
+  function sincronizar() {
+    const m = mapas.find(x => x.id === atual);
+    if (!m) return;
+    m.nodes = nodes; m.strokes = strokes; m.imgs = imgs; m.atualizado = Date.now();
+    gravar();
+  }
+
+  /* ---------- biblioteca ---------- */
+
+  const grade = document.getElementById("grade");
+
+  function quando(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return "agora";
+    if (s < 3600) return `há ${Math.floor(s/60)} min`;
+    if (s < 86400) return `há ${Math.floor(s/3600)} h`;
+    const d = Math.floor(s / 86400);
+    return d === 1 ? "ontem" : `há ${d} dias`;
+  }
+
+  function renderBiblioteca() {
+    grade.innerHTML = "";
+    mapas
+      .slice()
+      .sort((a,b) => b.atualizado - a.atualizado)
+      .forEach(m => grade.appendChild(cartao(m)));
+
+    const novo = document.createElement("button");
+    novo.className = "novo";
+    novo.innerHTML = "<b>+</b> Novo mapa";
+    novo.addEventListener("click", () => document.getElementById("dlgNovo").showModal());
+    grade.appendChild(novo);
+  }
+
+  function cartao(m) {
+    const el = document.createElement("div");
+    el.className = "cartao";
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+
+    const h = document.createElement("h3");
+    h.textContent = m.nome;
+
+    const cores = document.createElement("div");
+    cores.className = "pontos";
+    [...new Set(m.nodes.filter(n => !n.hub).map(n => n.tone))].slice(0,6).forEach(c => {
+      const i = document.createElement("i"); i.style.background = "var(" + c + ")"; cores.appendChild(i);
+    });
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.append(cores, Object.assign(document.createElement("span"), {
+      textContent: `${m.nodes.length} balões · ${quando(m.atualizado)}`
+    }));
+
+    const acoes = document.createElement("div");
+    acoes.className = "acoes";
+    acoes.append(
+      acao("Renomear", () => renomear(m.id)),
+      acao("Duplicar", () => duplicar(m.id)),
+      acao("Apagar", () => apagarMapa(m.id))
+    );
+
+    el.append(h, acoes, meta);
+    el.addEventListener("click", ev => { if (!ev.target.closest("button")) abrir(m.id); });
+    el.addEventListener("keydown", ev => { if (ev.key === "Enter") abrir(m.id); });
+    return el;
+  }
+
+  function acao(txt, fn) {
+    const b = document.createElement("button");
+    b.textContent = txt;
+    b.addEventListener("click", ev => { ev.stopPropagation(); fn(); });
+    return b;
+  }
+
+  function renomear(id) {
+    const m = mapas.find(x => x.id === id);
+    const novo = prompt("Nome do mapa:", m.nome);
+    if (novo && novo.trim()) { m.nome = novo.trim(); m.atualizado = Date.now(); gravar(); renderBiblioteca(); }
+  }
+  function duplicar(id) {
+    const m = mapas.find(x => x.id === id);
+    mapas.push({ id:"m"+(++seq), nome:m.nome + " (cópia)", atualizado:Date.now(), nodes:structuredClone(m.nodes) });
+    gravar(); renderBiblioteca();
+  }
+
+  let aConfirmar = null;
+  function apagarMapa(id) {
+    const m = mapas.find(x => x.id === id);
+    aConfirmar = { tipo:"mapa", id };
+    document.getElementById("confTitulo").textContent = "Apagar mapa";
+    document.getElementById("confTexto").textContent = `“${m.nome}” será apagado deste navegador. Não dá pra desfazer.`;
+    document.getElementById("dlgConfirma").showModal();
+  }
+
+  /* ---------- novo mapa ---------- */
+
+  document.querySelectorAll(".modelo").forEach(b => {
+    b.addEventListener("click", () => {
+      const base = b.dataset.modelo === "operacao" ? MODELO_OPERACAO : MODELO_BRANCO;
+      const nome = b.dataset.modelo === "operacao" ? "Operação da Lead" : "Mapa sem título";
+      const m = { id:"m"+(++seq), nome, atualizado:Date.now(), nodes:structuredClone(base) };
+      mapas.push(m); gravar();
+      document.getElementById("dlgNovo").close();
+      abrir(m.id);
+    });
+  });
+  document.getElementById("novoCancel").addEventListener("click", () => document.getElementById("dlgNovo").close());
+
+  /* ---------- abrir e voltar ---------- */
+
+  const nomeEl = document.getElementById("nomeMapa");
+
+  function abrir(id) {
+    const m = mapas.find(x => x.id === id);
+    if (!m) return;
+    atual = id;
+    nodes = m.nodes;
+    strokes = m.strokes || [];
+    imgs = m.imgs || [];
+    sel = null; selImg = null; passado.length = 0; futuro.length = 0;
+    nomeEl.textContent = m.nome;
+    document.body.classList.add("editando", "no-scroll");
+    render();
+    requestAnimationFrame(enquadrar);
+  }
+
+  function voltar() {
+    sincronizar();
+    atual = null;
+    document.body.classList.remove("editando", "no-scroll");
+    renderBiblioteca();
+  }
+  document.getElementById("voltar").addEventListener("click", voltar);
+
+  function renomearMapa(nome) {
+    const m = mapas.find(x => x.id === atual);
+    if (!m) return;
+    m.nome = (nome || "").trim() || "Mapa sem título";
+    nomeEl.textContent = m.nome;
+    m.atualizado = Date.now(); gravar();
+  }
+
+  nomeEl.addEventListener("blur", () => {
+    const m = mapas.find(x => x.id === atual);
+    if (!m) return;
+    renomearMapa(nomeEl.textContent);
+    // Caminho inverso: mudou o nome em cima, o balão central acompanha
+    const hub = nodes.find(n => n.hub);
+    if (hub && hub.t !== m.nome) {
+      hub.t = m.nome;
+      sincronizar(); render(); marcarSel();
+    }
+  });
+  nomeEl.addEventListener("keydown", ev => {
+    if (ev.key === "Enter") { ev.preventDefault(); nomeEl.blur(); }
+  });
+
+  /* ---------- histórico ---------- */
+
+  function instantaneo() { return JSON.stringify({ nodes, strokes, imgs }); }
+  function restaurar(txt) {
+    const e = JSON.parse(txt);
+    nodes = e.nodes || []; strokes = e.strokes || []; imgs = e.imgs || [];
+    if (!nodes.some(n => n.id === sel)) sel = null;
+    if (!imgs.some(i => i.id === selImg)) selImg = null;
+  }
+  function marco() {
+    passado.push(instantaneo());
+    if (passado.length > LIMITE) passado.shift();
+    futuro.length = 0;
+  }
+  function desfazer() {
+    if (!passado.length) return;
+    futuro.push(instantaneo());
+    restaurar(passado.pop());
+    sincronizar(); render(); marcarSel();
+  }
+  function refazer() {
+    if (!futuro.length) return;
+    passado.push(instantaneo());
+    restaurar(futuro.pop());
+    sincronizar(); render(); marcarSel();
+  }
+
+  /* ---------- câmera ---------- */
+
+  const viewport = document.getElementById("viewport");
+  const world = document.getElementById("world");
+  const lines = document.getElementById("lines");
+  const pctEl = document.getElementById("pct");
+
+  function applyCam() {
+    world.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    pctEl.textContent = Math.round(scale * 100) + "%";
+  }
+  function zoomAt(px, py, f) {
+    const novo = Math.min(2.2, Math.max(0.2, scale * f));
+    if (novo === scale) return;
+    tx = px - (px - tx) * (novo / scale);
+    ty = py - (py - ty) * (novo / scale);
+    scale = novo; applyCam();
+  }
+  viewport.addEventListener("wheel", ev => {
+    ev.preventDefault();
+    const r = viewport.getBoundingClientRect();
+    if (ev.ctrlKey || ev.metaKey) zoomAt(ev.clientX - r.left, ev.clientY - r.top, ev.deltaY < 0 ? 1.12 : 1/1.12);
+    else { tx -= ev.deltaX; ty -= ev.deltaY; applyCam(); }
+  }, { passive:false });
+
+  let espaco = false;
+  viewport.addEventListener("pointerdown", ev => {
+    if (ferramenta !== "mao" && !espaco) return;
+    const noBalao = ev.target.closest(".node");
+    if (noBalao && !espaco) return;
+    if (ev.target.closest(".img")) return;
+    if (ev.target.isContentEditable) return;
+    if (!noBalao) { sel = null; marcarSel(); }
+    const sx = ev.clientX, sy = ev.clientY, otx = tx, oty = ty;
+    viewport.classList.add("panning");
+    viewport.setPointerCapture(ev.pointerId);
+    function mv(e) { tx = otx + (e.clientX - sx); ty = oty + (e.clientY - sy); applyCam(); }
+    function up() {
+      viewport.classList.remove("panning");
+      viewport.releasePointerCapture(ev.pointerId);
+      viewport.removeEventListener("pointermove", mv);
+      viewport.removeEventListener("pointerup", up);
+    }
+    viewport.addEventListener("pointermove", mv);
+    viewport.addEventListener("pointerup", up);
+  });
+
+  document.getElementById("zin").addEventListener("click", () => { const r = viewport.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, 1.2); });
+  document.getElementById("zout").addEventListener("click", () => { const r = viewport.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, 1/1.2); });
+  document.getElementById("fit").addEventListener("click", enquadrar);
+
+  function enquadrar() {
+    const els = [...world.querySelectorAll(".node")];
+    if (!els.length) return;
+    let x1=Infinity, y1=Infinity, x2=-Infinity, y2=-Infinity;
+    els.forEach(el => {
+      x1 = Math.min(x1, el.offsetLeft); y1 = Math.min(y1, el.offsetTop);
+      x2 = Math.max(x2, el.offsetLeft + el.offsetWidth);
+      y2 = Math.max(y2, el.offsetTop + el.offsetHeight);
+    });
+    const r = viewport.getBoundingClientRect(), marg = 70;
+    scale = Math.min(1.3, Math.max(0.2, Math.min((r.width - marg*2)/(x2-x1), (r.height - marg*2)/(y2-y1))));
+    tx = (r.width - (x2-x1)*scale)/2 - x1*scale;
+    ty = (r.height - (y2-y1)*scale)/2 - y1*scale;
+    applyCam();
+  }
+  function centralizarNo(id) {
+    const el = world.querySelector(`[data-id="${id}"]`);
+    if (!el) return;
+    const r = viewport.getBoundingClientRect();
+    tx = r.width/2 - (el.offsetLeft + el.offsetWidth/2) * scale;
+    ty = r.height/2 - (el.offsetTop + el.offsetHeight/2) * scale;
+    applyCam();
+  }
+
+  /* ---------- balões ---------- */
+
+  function render() {
+    world.querySelectorAll(".node").forEach(el => el.remove());
+    medidas = new Map();
+    nodes.forEach(n => { if (visivel(n)) world.appendChild(buildNode(n)); });
+    renderImgs(); renderDraw();
+    requestAnimationFrame(drawLines);
+  }
+  function marcarSel() {
+    world.querySelectorAll(".node").forEach(el => el.classList.toggle("sel", el.dataset.id === sel));
+  }
+
+  function buildNode(n) {
+    const el = document.createElement("div");
+    el.className = "node" + (n.hub ? " hub" : "") + (sel === n.id ? " sel" : "");
+    el.style.left = n.x + "px"; el.style.top = n.y + "px";
+    el.style.setProperty("--tone", "var(" + n.tone + ")");
+    el.dataset.id = n.id;
+
+    const t = document.createElement("div"); t.className = "t"; t.textContent = n.t;
+    const d = document.createElement("div"); d.className = "d"; d.textContent = n.d || "";
+    el.append(t, d);
+
+    const tools = document.createElement("div");
+    tools.className = "tools";
+    tools.appendChild(btn("+", "Criar balão ligado (Tab)", () => criarFilho(n.id)));
+    if (!n.hub) tools.appendChild(btn("✕", "Apagar — ⌘Z desfaz", () => apagarNo(n.id)));
+    el.appendChild(tools);
+
+    // Fecha/abre o ramo. No centro não entra: fechar o mapa inteiro não serve.
+    if (!n.hub && temFilhos(n.id)) {
+      const f = document.createElement("button");
+      f.className = "fold";
+      const pai = nodes.find(x => x.id === n.parent);
+      const paraDireita = !pai || (n.x + NODE_W / 2 >= pai.x + NODE_W / 2);
+      f.classList.add(paraDireita ? "fold-dir" : "fold-esq");
+      const qtd = descendentes(n.id).length;
+      f.textContent = n.fechado ? String(qtd) : "−";
+      f.title = n.fechado ? `Abrir ${qtd} balões escondidos` : "Fechar este ramo";
+      f.addEventListener("pointerdown", ev => ev.stopPropagation());
+      f.addEventListener("click", ev => {
+        ev.stopPropagation();
+        marco();
+        n.fechado = !n.fechado;
+        sincronizar(); render();
+        organizarTudo({ semMarco: true, semEnquadrar: true });
+        marcarSel();
+      });
+      el.appendChild(f);
+    }
+
+    if (!n.hub) {
+      const sw = document.createElement("div");
+      sw.className = "swatches";
+      TONES.forEach(c => {
+        const b = document.createElement("div");
+        b.className = "sw"; b.style.background = "var(" + c + ")"; b.title = "Cor do ramo";
+        b.addEventListener("pointerdown", ev => { ev.stopPropagation(); marco(); n.tone = c; sincronizar(); render(); marcarSel(); });
+        sw.appendChild(b);
+      });
+      el.appendChild(sw);
+    }
+
+    [t, d].forEach(campo => {
+      campo.addEventListener("dblclick", ev => { ev.stopPropagation(); editar(campo); });
+      campo.addEventListener("focus", () => { campo.dataset.antes = campo.textContent; });
+      campo.addEventListener("blur", () => {
+        campo.contentEditable = "false";
+        const alvo = nodes.find(x => x.id === n.id);
+        if (!alvo) return;
+        // Balão criado e deixado em branco não fica sujando o mapa. Só apaga
+        // se o foco saiu do balão inteiro — senão clicar numa cor apagaria.
+        if (campo === t) {
+          setTimeout(() => {
+            const ainda = nodes.find(x => x.id === n.id);
+            const dentro = document.activeElement &&
+                           document.activeElement.closest &&
+                           document.activeElement.closest(`[data-id="${n.id}"]`);
+            if (ainda && !dentro && estaVazio(ainda)) {
+              const pai = descartarVazio(n.id);
+              if (pai !== null) { sincronizar(); render(); marcarSel(); }
+            }
+          }, 140);
+        }
+        if (campo.dataset.antes !== undefined && campo.dataset.antes !== campo.textContent) marco();
+        if (campo === t) {
+          alvo.t = campo.textContent.trim() || "Sem título";
+          // O balão central é o nome do mapa: escreveu ali, mudou em cima
+          // e na biblioteca. Um mapa com dois nomes confunde quem procura.
+          if (alvo.hub) renomearMapa(alvo.t);
+        } else alvo.d = campo.textContent;
+        sincronizar(); drawLines();
+      });
+      if (campo === t && n.hub) {
+        campo.addEventListener("input", () => {
+          nomeEl.textContent = campo.textContent.trim() || "Mapa sem título";
+        });
+      }
+      campo.addEventListener("keydown", ev => {
+        if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); campo.blur(); return; }
+        if (campo === t && ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation(); campo.blur(); criarIrmao(n.id); return; }
+        if (ev.key === "Tab") { ev.preventDefault(); ev.stopPropagation(); campo.blur(); criarFilho(n.id); return; }
+      });
+    });
+
+    // Duplo clique em qualquer ponto do balão edita: no texto clicado, ou no título
+    el.addEventListener("dblclick", ev => {
+      if (ev.target === t || ev.target === d) return; // já tratado no próprio campo
+      if (ev.target.closest("button") || ev.target.classList.contains("sw")) return;
+      ev.stopPropagation();
+      editar(t);
+    });
+    el.addEventListener("pointerdown", ev => arrastar(ev, el, n));
+    return el;
+  }
+
+  function btn(txt, title, fn) {
+    const b = document.createElement("button");
+    b.textContent = txt; b.title = title; b.setAttribute("aria-label", title);
+    b.addEventListener("pointerdown", ev => ev.stopPropagation());
+    b.addEventListener("click", ev => { ev.stopPropagation(); fn(); });
+    return b;
+  }
+  function editar(campo) {
+    campo.contentEditable = "true"; campo.focus();
+    const r = document.createRange(); r.selectNodeContents(campo);
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+
+  function limparMarcaAlvo() {
+    world.querySelectorAll(".alvo-filho,.alvo-antes,.alvo-depois")
+      .forEach(x => x.classList.remove("alvo-filho","alvo-antes","alvo-depois"));
+  }
+
+  function arrastar(ev, el, n) {
+    if (ev.target.isContentEditable || espaco) return;
+    if (ev.target.closest("button") || ev.target.classList.contains("sw")) return;
+    ev.stopPropagation();
+    sel = n.id; marcarSel();
+    const sx = ev.clientX, sy = ev.clientY, ox = n.x, oy = n.y;
+    let mexeu = false, marcou = false, capturou = false, alvo = null;
+
+    const proibidos = new Set([n.id, ...descendentes(n.id).map(x => x.id)]);
+
+    function acharAlvo(e) {
+      el.style.pointerEvents = "none";
+      const sob = document.elementFromPoint(e.clientX, e.clientY);
+      el.style.pointerEvents = "";
+      const outroEl = sob && sob.closest && sob.closest(".node");
+      if (!outroEl || proibidos.has(outroEl.dataset.id)) return null;
+      const outro = nodes.find(x => x.id === outroEl.dataset.id);
+      if (!outro) return null;
+      const r = outroEl.getBoundingClientRect();
+      const rel = (e.clientY - r.top) / Math.max(1, r.height);
+      let modo = "filho";
+      if (outro.parent && rel < 0.28) modo = "antes";
+      else if (outro.parent && rel > 0.72) modo = "depois";
+      return { el: outroEl, no: outro, modo };
+    }
+
+    function mv(e) {
+      const dx = (e.clientX - sx)/scale, dy = (e.clientY - sy)/scale;
+      if (!mexeu && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+      if (!marcou) { marco(); marcou = true; }
+      if (!capturou) {
+        el.setPointerCapture(e.pointerId);
+        el.classList.add("dragging");
+        capturou = true;
+      }
+      mexeu = true;
+      n.x = Math.max(0, ox + dx); n.y = Math.max(0, oy + dy);
+      el.style.left = n.x + "px"; el.style.top = n.y + "px";
+
+      limparMarcaAlvo();
+      alvo = acharAlvo(e);
+      if (alvo) alvo.el.classList.add("alvo-" + alvo.modo);
+      drawLines();
+    }
+
+    function up(e) {
+      if (capturou) { try { el.releasePointerCapture(e.pointerId); } catch (err) {} }
+      el.removeEventListener("pointermove", mv);
+      el.removeEventListener("pointerup", up);
+      el.classList.remove("dragging");
+      limparMarcaAlvo();
+      if (!mexeu) return;
+      if (alvo) soltarEm(n, alvo); else sincronizar();
+    }
+    el.addEventListener("pointermove", mv);
+    el.addEventListener("pointerup", up);
+  }
+
+  // Solta o balão numa nova posição da hierarquia, levando os filhos junto
+  function soltarEm(n, alvo) {
+    const bloco = [n, ...descendentes(n.id)];
+    let destino;
+
+    if (alvo.modo === "filho") {
+      n.parent = alvo.no.id;
+      destino = posicaoDeFilho(alvo.no.id, n.id);
+    } else {
+      n.parent = alvo.no.parent;
+      // reordena na lista para o Tab seguinte respeitar a nova ordem
+      nodes = nodes.filter(x => x.id !== n.id);
+      const i = nodes.findIndex(x => x.id === alvo.no.id);
+      nodes.splice(alvo.modo === "antes" ? i : i + 1, 0, n);
+
+      const alturaN = alturaDe(n.id) + 30;
+      const yBase = alvo.modo === "antes"
+        ? alvo.no.y
+        : alvo.no.y + alturaDe(alvo.no.id) + 30;
+
+      // abre espaço embaixo, empurrando irmãos e os filhos deles
+      const meus = new Set(bloco.map(b => b.id));
+      nodes.filter(x => x.parent === n.parent && !meus.has(x.id) && x.y >= yBase - 1
+                        && Math.abs(x.x - alvo.no.x) < 60)
+           .forEach(x => [x, ...descendentes(x.id)].forEach(b => { b.y += alturaN; }));
+
+      destino = { x: alvo.no.x, y: yBase };
+    }
+
+    if (destino) {
+      const ddx = destino.x - n.x, ddy = destino.y - n.y;
+      bloco.forEach(b => { b.x = Math.max(0, b.x + ddx); b.y = Math.max(0, b.y + ddy); });
+    }
+    sincronizar(); render();
+    organizarTudo({ semMarco: true, semEnquadrar: true });
+    marcarSel();
+  }
+
+  // Ler offsetHeight forca o navegador a recalcular a tela inteira. Medir
+  // dentro de laco trava tudo, entao a medida fica em cache — render() limpa.
+  let medidas = new Map();
+  function alturaDe(id) {
+    if (medidas.has(id)) return medidas.get(id);
+    const el = world.querySelector(`[data-id="${id}"]`);
+    const h = el ? el.offsetHeight : 120;
+    medidas.set(id, h);
+    return h;
+  }
+  const POR_COLUNA = 8;
+  const VAO_X = 80;    // distancia horizontal entre pai e filho
+  const VAO_Y = 18;    // respiro vertical entre irmaos
+
+  /* ---------- nunca deixa caixa nascer em cima de outra ---------- */
+  const MARGEM = 26, ALTURA_CHUTE = 110;
+  function acharVaga(x, y, h, ignorar) {
+    let alvoY = y, mexeu = true, voltas = 0;
+    while (mexeu && voltas++ < 300) {
+      mexeu = false;
+      for (const o of nodes) {
+        if (ignorar && ignorar.has(o.id)) continue;
+        const oh = alturaDe(o.id);
+        const bateX = x < o.x + NODE_W + MARGEM && o.x < x + NODE_W + MARGEM;
+        const bateY = alvoY < o.y + oh + MARGEM && o.y < alvoY + h + MARGEM;
+        if (bateX && bateY) { alvoY = o.y + oh + MARGEM; mexeu = true; }
+      }
+    }
+    return alvoY;
+  }
+
+  /* ---------- balão que ficou em branco some ---------- */
+  function estaVazio(n) {
+    if (!n || n.hub) return false;
+    const t = (n.t || "").trim();
+    const semTexto = t === "" || t === "Novo balão" || t === "Sem título";
+    return semTexto && !(n.d || "").trim() && !nodes.some(x => x.parent === n.id);
+  }
+  function descartarVazio(id) {
+    const n = nodes.find(x => x.id === id);
+    if (!estaVazio(n)) return null;
+    const pai = n.parent;
+    nodes = nodes.filter(x => x.id !== id);
+    if (sel === id) sel = pai;
+    return pai || false;
+  }
+
+  /* ---------- onde um filho deve nascer ---------- */
+  function posicaoDeFilho(paiId, ignorarId) {
+    const p = nodes.find(n => n.id === paiId);
+    if (!p) return null;
+    const irmaos = nodes.filter(n => n.parent === paiId && n.id !== ignorarId);
+    const pcx = p.x + NODE_W / 2;
+    const esquerdaUsada = irmaos.some(s => s.x + NODE_W / 2 < pcx);
+    const direitaUsada  = irmaos.some(s => s.x + NODE_W / 2 > pcx);
+
+    let direita;
+    if (esquerdaUsada && !direitaUsada) direita = false;
+    else if (direitaUsada && !esquerdaUsada) direita = irmaos.length < POR_COLUNA;
+    else if (esquerdaUsada && direitaUsada) {
+      const nDir = irmaos.filter(s => s.x + NODE_W / 2 > pcx).length;
+      direita = nDir <= irmaos.length - nDir;
+    } else direita = true;
+
+    const coluna = irmaos.filter(s => (s.x + NODE_W / 2 > pcx) === direita);
+    const x = Math.max(0, p.x + (direita ? NODE_W + VAO_X : -(NODE_W + VAO_X)));
+    let y = coluna.length ? Math.max(...coluna.map(s => s.y + alturaDe(s.id))) + 30 : p.y;
+
+    const ignora = new Set();
+    if (ignorarId) { ignora.add(ignorarId); descendentes(ignorarId).forEach(d => ignora.add(d.id)); }
+    y = acharVaga(x, y, ignorarId ? alturaDe(ignorarId) : ALTURA_CHUTE, ignora);
+    return { x, y, tone: p.hub ? TONES[irmaos.length % TONES.length] : p.tone };
+  }
+
+  function criarFilho(paiId) {
+    // Se o balão de referência ficou em branco, ele some e a gente segue do pai
+    const ref = nodes.find(n => n.id === paiId);
+    if (ref && estaVazio(ref)) {
+      const pai = descartarVazio(paiId);
+      if (!pai) { sincronizar(); render(); marcarSel(); return; }
+      paiId = pai;
+    }
+    const p = nodes.find(n => n.id === paiId);
+    if (!p) return;
+    const irmaos = nodes.filter(n => n.parent === paiId);
+
+    const pos = posicaoDeFilho(paiId);
+    if (pos) inserir({ parent:paiId, x:pos.x, y:pos.y, tone:pos.tone });
+  }
+  function criarIrmao(id) {
+    const n = nodes.find(x => x.id === id);
+    if (!n) return;
+    if (estaVazio(n)) {                            // em branco: some e volta uma casa
+      const pai = descartarVazio(id);
+      if (!pai) { sincronizar(); render(); marcarSel(); return; }
+      return criarIrmao(pai);                      // irmão do pai, não do vazio
+    }
+    if (!n.parent) return criarFilho(id);          // no centro, Enter cria um ramo novo
+
+    marco();
+    const passo = alturaDe(id) + 30;
+    const y = n.y + passo;
+    const meuLado = n.x;
+
+    // Abre espaço: quem estava daqui pra baixo, do mesmo lado, desce junto
+    nodes
+      .filter(s => s.parent === n.parent && s.id !== id && s.y >= y - 1 && Math.abs(s.x - meuLado) < 40)
+      .forEach(s => {
+        const bloco = [s, ...descendentes(s.id)];
+        bloco.forEach(b => { b.y += passo; });
+      });
+
+    const yLivre = acharVaga(n.x, y, ALTURA_CHUTE, null);
+    inserir({ parent:n.parent, x:n.x, y:yLivre, tone:n.tone, semMarco:true });
+  }
+  function inserir({ parent, x, y, tone, semMarco }) {
+    if (!semMarco) marco();
+    const novo = { id:"k"+(++seq), parent, x, y, tone, t:"Novo balão", d:"" };
+    const paiDoNovo = nodes.find(x => x.id === parent);
+    if (paiDoNovo && paiDoNovo.fechado) paiDoNovo.fechado = false;
+    nodes.push(novo); sel = novo.id;
+    sincronizar(); render();
+    // Arruma a arvore na hora — e o que impede o mapa de embolar conforme cresce
+    organizarTudo({ semMarco: true, semEnquadrar: true });
+    centralizarNo(novo.id);
+    const campo = world.querySelector(`[data-id="${novo.id}"] .t`);
+    if (campo) editar(campo);
+  }
+
+  // Sem confirmação: apaga na hora e o ⌘Z devolve — é mais rápido pra montar mapa
+  function apagarNo(id) {
+    const n = nodes.find(x => x.id === id);
+    if (!n || n.hub) return;
+    marco();
+    const alvos = new Set([id, ...descendentes(id).map(x => x.id)]);
+    const pai = n.parent;
+    nodes = nodes.filter(x => !alvos.has(x.id));
+    sel = nodes.some(x => x.id === pai) ? pai : null;
+    sincronizar(); render(); marcarSel();
+  }
+  function temFilhos(id) { return nodes.some(n => n.parent === id); }
+  // Um balão fica escondido se qualquer ancestral dele estiver fechado
+  function visivel(n) {
+    let p = n.parent;
+    const vistos = new Set();
+    while (p && !vistos.has(p)) {
+      vistos.add(p);
+      const pai = nodes.find(x => x.id === p);
+      if (!pai) break;
+      if (pai.fechado) return false;
+      p = pai.parent;
+    }
+    return true;
+  }
+
+  function descendentes(id) {
+    const out = [], fila = nodes.filter(n => n.parent === id);
+    while (fila.length) { const n = fila.shift(); out.push(n); fila.push(...nodes.filter(x => x.parent === n.id)); }
+    return out;
+  }
+
+  document.getElementById("confOk").addEventListener("click", () => {
+    if (!aConfirmar) return;
+    mapas = mapas.filter(m => m.id !== aConfirmar.id);
+    gravar(); renderBiblioteca();
+    aConfirmar = null;
+    document.getElementById("dlgConfirma").close();
+  });
+  document.getElementById("confCancel").addEventListener("click", () => {
+    aConfirmar = null; document.getElementById("dlgConfirma").close();
+  });
+
+  /* ---------- linhas ---------- */
+
+  function drawLines() {
+    const r = {};
+    world.querySelectorAll(".node").forEach(el => {
+      r[el.dataset.id] = { x:el.offsetLeft, y:el.offsetTop, w:el.offsetWidth, h:el.offsetHeight };
+    });
+    let d = "";
+    nodes.forEach(n => {
+      if (!n.parent) return;
+      const p = r[n.parent], c = r[n.id];
+      if (!p || !c) return;
+      const pcy = p.y + p.h/2, ccy = c.y + c.h/2;
+      const dir = c.x + c.w/2 >= p.x + p.w/2;
+      const px = dir ? p.x + p.w : p.x, cx = dir ? c.x : c.x + c.w;
+      const puxa = Math.max(55, Math.abs(cx - px) * 0.55);
+      d += `<path d="M ${px} ${pcy} C ${dir?px+puxa:px-puxa} ${pcy} ${dir?cx-puxa:cx+puxa} ${ccy} ${cx} ${ccy}" fill="none" stroke="var(${n.tone})" stroke-width="2.5" stroke-linecap="round"/>`;
+      d += `<circle cx="${cx}" cy="${ccy}" r="4" fill="var(${n.tone})"/>`;
+    });
+    lines.innerHTML = d;
+  }
+
+  /* ---------- teclado ---------- */
+
+  document.addEventListener("keydown", ev => {
+    if (!document.body.classList.contains("editando")) return;
+    if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "z") {
+      ev.preventDefault();
+      if (ev.target.isContentEditable) ev.target.blur();
+      ev.shiftKey ? refazer() : desfazer();
+      return;
+    }
+    if (ev.key === " " && !ev.target.isContentEditable) {
+      espaco = true;
+      if (ev.target === document.body) ev.preventDefault();
+    }
+    if (ev.target.isContentEditable || (ev.target.closest && ev.target.closest(".t, .d"))) return;
+    if (document.getElementById("dlgConfirma").open || document.getElementById("dlgNovo").open) return;
+    if (ev.key === "Escape") { if (sel) { sel = null; marcarSel(); } else voltar(); return; }
+    if (!sel) return;
+    if (ev.key === "Tab")   { ev.preventDefault(); criarFilho(sel); }
+    if (ev.key === "Enter") { ev.preventDefault(); criarIrmao(sel); }
+    if (ev.key === "F2")    { ev.preventDefault(); const c = world.querySelector(`[data-id="${sel}"] .t`); if (c) editar(c); }
+    if (ev.key === "Delete" || ev.key === "Backspace") { ev.preventDefault(); apagarNo(sel); }
+  });
+  document.addEventListener("keyup", ev => { if (ev.key === " ") espaco = false; });
+
+  document.getElementById("export").addEventListener("click", () => {
+    const m = mapas.find(x => x.id === atual);
+    const blob = new Blob([JSON.stringify({ nome:m.nome, nodes }, null, 2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = m.nome.replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".json";
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  /* ---------- compartilhar: o mapa inteiro viaja dentro do link ---------- */
+
+  function bytesParaB64(bytes) {
+    let s = ""; for (const b of bytes) s += String.fromCharCode(b);
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64ParaBytes(txt) {
+    const s = atob(txt.replace(/-/g, "+").replace(/_/g, "/"));
+    const out = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+    return out;
+  }
+  async function empacotar(obj) {
+    const bruto = new TextEncoder().encode(JSON.stringify(obj));
+    if (typeof CompressionStream === "function") {
+      const cs = new CompressionStream("gzip");
+      const w = cs.writable.getWriter(); w.write(bruto); w.close();
+      const buf = await new Response(cs.readable).arrayBuffer();
+      return "z" + bytesParaB64(new Uint8Array(buf));
+    }
+    return "p" + bytesParaB64(bruto);
+  }
+  async function desempacotar(txt) {
+    const bytes = b64ParaBytes(txt.slice(1));
+    if (txt[0] === "z") {
+      const ds = new DecompressionStream("gzip");
+      const w = ds.writable.getWriter(); w.write(bytes); w.close();
+      return JSON.parse(await new Response(ds.readable).text());
+    }
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+
+  document.getElementById("compartilhar").addEventListener("click", async () => {
+    const m = mapas.find(x => x.id === atual);
+    if (!m) return;
+    sincronizar();
+    try {
+      const pacote = await empacotar({ nome:m.nome, nodes, strokes, imgs });
+      const link = location.origin + location.pathname + "#mapa=" + pacote;
+      if (link.length > 60000) {
+        mostrarAviso("Esse mapa ficou pesado demais pro link — normalmente são as imagens. Use o botão Baixar e envie o arquivo.", 7000);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(link);
+        mostrarAviso("Link copiado! Quem abrir vê o mapa exatamente como está agora.", 5000);
+      } catch (e) {
+        if (navigator.share) { await navigator.share({ title:m.nome, url:link }); }
+        else { prompt("Copie o link do mapa:", link); }
+      }
+    } catch (e) {
+      mostrarAviso("Não consegui gerar o link agora. Tente de novo.", 5000);
+    }
+  });
+
+  async function abrirLinkCompartilhado() {
+    const h = location.hash || "";
+    if (!h.startsWith("#mapa=")) return false;
+    try {
+      const dados = await desempacotar(h.slice(6));
+      if (!dados || !Array.isArray(dados.nodes)) return false;
+      const m = {
+        id: "m" + (++seq),
+        nome: (dados.nome || "Mapa compartilhado") + " (compartilhado)",
+        atualizado: Date.now(),
+        nodes: dados.nodes,
+        strokes: dados.strokes || [],
+        imgs: dados.imgs || [],
+      };
+      mapas.push(m); gravar();
+      history.replaceState(null, "", location.pathname);
+      renderBiblioteca();
+      abrir(m.id);
+      mostrarAviso("Mapa recebido e salvo aqui neste navegador.", 5000);
+      return true;
+    } catch (e) {
+      mostrarAviso("Esse link de mapa parece incompleto ou quebrado.", 6000);
+      return false;
+    }
+  }
+
+
+  window.addEventListener("resize", () => { if (atual) drawLines(); });
+  window.addEventListener("beforeunload", () => { if (atual) sincronizar(); });
+
+
+  /* ============ organizar o mapa ============ */
+  // Arruma a arvore inteira: cada ramo vira uma coluna compacta e o pai fica
+  // centralizado na altura dos filhos. Respeita o lado em que voce ja deixou
+  // cada ramo, entao nao embaralha a leitura que voce montou.
+  function organizarTudo(opcoes) {
+    const o = opcoes || {};
+    const hub = nodes.find(n => n.hub) || nodes.find(n => !n.parent);
+    if (!hub) return;
+    if (!o.semMarco) marco();
+
+    const cacheAlt = new Map();
+    const alt = id => {
+      if (!cacheAlt.has(id)) cacheAlt.set(id, alturaDe(id));
+      return cacheAlt.get(id);
+    };
+    const cacheBloco = new Map();
+    function alturaBloco(id) {
+      if (cacheBloco.has(id)) return cacheBloco.get(id);
+      const dono = nodes.find(n => n.id === id);
+      const filhos = (dono && dono.fechado) ? [] : nodes.filter(n => n.parent === id);
+      let h = alt(id);
+      if (filhos.length) {
+        const soma = filhos.reduce((a, f) => a + alturaBloco(f.id) + VAO_Y, -VAO_Y);
+        h = Math.max(h, soma);
+      }
+      cacheBloco.set(id, h);
+      return h;
+    }
+
+    function ramo(id, topo, lado) {
+      const n = nodes.find(x => x.id === id);
+      const filhos = n.fechado ? [] : nodes.filter(x => x.parent === id);
+      n.y = Math.round(topo + (alturaBloco(id) - alt(id)) / 2);
+      let y = topo;
+      filhos.forEach(f => {
+        f.x = Math.max(0, Math.round(n.x + lado * (NODE_W + VAO_X)));
+        ramo(f.id, y, lado);
+        y += alturaBloco(f.id) + VAO_Y;
+      });
+    }
+
+    const meio = hub.x + NODE_W / 2;
+    const filhos = nodes.filter(n => n.parent === hub.id);
+    const daDireita = filhos.filter(f => f.x + NODE_W / 2 >= meio);
+    const daEsquerda = filhos.filter(f => f.x + NODE_W / 2 < meio);
+
+    function empilhar(lista, lado) {
+      if (!lista.length) return;
+      const total = lista.reduce((a, f) => a + alturaBloco(f.id) + VAO_Y, -VAO_Y);
+      let y = hub.y + alt(hub.id) / 2 - total / 2;
+      lista.forEach(f => {
+        f.x = Math.max(0, Math.round(hub.x + lado * (NODE_W + VAO_X)));
+        ramo(f.id, y, lado);
+        y += alturaBloco(f.id) + VAO_Y;
+      });
+    }
+    empilhar(daDireita, 1);
+    empilhar(daEsquerda, -1);
+
+    sincronizar(); render(); marcarSel();
+    if (!o.semEnquadrar) requestAnimationFrame(enquadrar);
+  }
+  document.getElementById("btnOrganizar").addEventListener("click", organizarTudo);
+
+  /* ============ aviso ============ */
+  const avisoEl = document.getElementById("aviso");
+  let avisoT = null;
+  function mostrarAviso(txt, ms) {
+    avisoEl.textContent = txt; avisoEl.hidden = false;
+    clearTimeout(avisoT);
+    if (ms) avisoT = setTimeout(esconderAviso, ms);
+  }
+  function esconderAviso() { avisoEl.hidden = true; }
+
+  /* ============ tema ============ */
+  const TEMA = "mapas_bx_tema";
+  function aplicarTema(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem(TEMA, t); } catch (e) {}
+    document.getElementById("btnTema").title =
+      t === "dark" ? "Mudar para o tema claro" : "Mudar para o tema escuro";
+  }
+  (function () {
+    let t = null;
+    try { t = localStorage.getItem(TEMA); } catch (e) {}
+    if (t !== "dark" && t !== "light")
+      t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    aplicarTema(t);
+  })();
+  document.getElementById("btnTema").addEventListener("click", () => {
+    aplicarTema(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+
+  /* ============ ferramentas ============ */
+  const CORES = ["auto", "#E5484D", "#E8930C", "#12A87C", "#3B8EEA", "#A461E0"];
+  let corAtual = "#E5484D", espessura = 7, marcaTexto = false;
+
+  const paleta = document.getElementById("paleta");
+  paleta.style.display = "flex"; paleta.style.gap = "4px";
+  CORES.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "cor" + (c === corAtual ? " ativo" : "");
+    b.dataset.cor = c;
+    b.style.background = c === "auto" ? "var(--ink)" : c;
+    b.title = c === "auto" ? "Cor do tema" : "Cor";
+    b.addEventListener("click", () => {
+      corAtual = c;
+      paleta.querySelectorAll(".cor").forEach(x => x.classList.toggle("ativo", x.dataset.cor === c));
+    });
+    paleta.appendChild(b);
+  });
+
+  document.querySelectorAll(".esp").forEach(b => {
+    b.addEventListener("click", () => {
+      espessura = +b.dataset.w;
+      marcaTexto = b.dataset.marca === "1";
+      document.querySelectorAll(".esp").forEach(x => x.classList.toggle("ativo", x === b));
+    });
+  });
+
+  const opcoesCaneta = document.getElementById("opcoesCaneta");
+  function usarFerramenta(f) {
+    ferramenta = f;
+    document.querySelectorAll(".ferr[data-f]").forEach(b => b.classList.toggle("ativo", b.dataset.f === f));
+    document.body.classList.toggle("desenhando", f !== "mao");
+    document.body.classList.toggle("borrando", f === "borracha");
+    opcoesCaneta.hidden = f !== "caneta";
+    if (f !== "mao") { sel = null; marcarSel(); selImg = null; renderImgs(); }
+  }
+  document.querySelectorAll(".ferr[data-f]").forEach(b =>
+    b.addEventListener("click", () => usarFerramenta(b.dataset.f)));
+
+  /* ============ coordenadas ============ */
+  function paraMundo(cx, cy) {
+    const r = viewport.getBoundingClientRect();
+    return [(cx - r.left - tx) / scale, (cy - r.top - ty) / scale];
+  }
+
+  /* ============ desenho ============ */
+  const draw = document.getElementById("draw");
+  const NS = "http://www.w3.org/2000/svg";
+
+  function caminho(pts) {
+    if (!pts.length) return "";
+    let d = "M " + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1);
+    for (let i = 1; i < pts.length; i++) d += " L " + pts[i][0].toFixed(1) + " " + pts[i][1].toFixed(1);
+    return d;
+  }
+  function pathDe(t) {
+    const el = document.createElementNS(NS, "path");
+    el.setAttribute("d", caminho(t.pts));
+    el.setAttribute("stroke", t.cor === "auto" ? "var(--ink)" : t.cor);
+    el.setAttribute("stroke-width", t.w);
+    el.setAttribute("fill", "none");
+    el.setAttribute("stroke-linecap", "round");
+    el.setAttribute("stroke-linejoin", "round");
+    if (t.marca) el.setAttribute("opacity", ".35");
+    return el;
+  }
+  function renderDraw() {
+    draw.textContent = "";
+    strokes.forEach(t => draw.appendChild(pathDe(t)));
+  }
+
+  function apagarPerto(cx, cy) {
+    const [wx, wy] = paraMundo(cx, cy);
+    const raio = 16 / scale;
+    const antes = strokes.length;
+    strokes = strokes.filter(t =>
+      !t.pts.some(pt => Math.hypot(pt[0] - wx, pt[1] - wy) < raio + t.w / 2));
+    if (strokes.length !== antes) { renderDraw(); return true; }
+    return false;
+  }
+
+  viewport.addEventListener("pointerdown", ev => {
+    if (ferramenta === "mao" || espaco) return;
+    if (ev.button !== 0) return;
+    ev.preventDefault();
+    viewport.setPointerCapture(ev.pointerId);
+    let mudou = false;
+    marco();
+
+    if (ferramenta === "borracha") {
+      mudou = apagarPerto(ev.clientX, ev.clientY);
+      const mv = e => { if (apagarPerto(e.clientX, e.clientY)) mudou = true; };
+      const up = () => {
+        viewport.removeEventListener("pointermove", mv);
+        viewport.removeEventListener("pointerup", up);
+        viewport.removeEventListener("pointercancel", up);
+        if (mudou) sincronizar(); else passado.pop();
+      };
+      viewport.addEventListener("pointermove", mv);
+      viewport.addEventListener("pointerup", up);
+      viewport.addEventListener("pointercancel", up);
+      return;
+    }
+
+    const traco = { id: "t" + (seq++), cor: corAtual, w: espessura, marca: marcaTexto,
+                    pts: [paraMundo(ev.clientX, ev.clientY)] };
+    const el = pathDe(traco);
+    draw.appendChild(el);
+    const mv = e => {
+      const pt = paraMundo(e.clientX, e.clientY);
+      const ult = traco.pts[traco.pts.length - 1];
+      if (Math.hypot(pt[0] - ult[0], pt[1] - ult[1]) * scale < 1.6) return;
+      traco.pts.push(pt);
+      el.setAttribute("d", caminho(traco.pts));
+    };
+    const up = () => {
+      viewport.removeEventListener("pointermove", mv);
+      viewport.removeEventListener("pointerup", up);
+      viewport.removeEventListener("pointercancel", up);
+      if (traco.pts.length < 2) { el.remove(); passado.pop(); return; }
+      strokes.push(traco);
+      sincronizar();
+    };
+    viewport.addEventListener("pointermove", mv);
+    viewport.addEventListener("pointerup", up);
+    viewport.addEventListener("pointercancel", up);
+  });
+
+  /* ============ imagens ============ */
+  const camadaImg = document.getElementById("camadaImg");
+  const arqImg = document.getElementById("arqImg");
+  const MAX_LADO = 1400;
+
+  function prepararImagem(file) {
+    return new Promise((ok, falha) => {
+      const fr = new FileReader();
+      fr.onerror = falha;
+      fr.onload = () => {
+        const im = new Image();
+        im.onerror = falha;
+        im.onload = () => {
+          let w = im.naturalWidth, h = im.naturalHeight;
+          if (Math.max(w, h) > MAX_LADO) {
+            const k = MAX_LADO / Math.max(w, h);
+            w = Math.round(w * k); h = Math.round(h * k);
+          }
+          const cv = document.createElement("canvas");
+          cv.width = w; cv.height = h;
+          cv.getContext("2d").drawImage(im, 0, 0, w, h);
+          const png = /png|gif|webp|svg/i.test(file.type);
+          ok({ src: cv.toDataURL(png ? "image/png" : "image/jpeg", 0.82), w, h });
+        };
+        im.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  async function inserirImagens(files, cx, cy) {
+    const lista = [...files].filter(f => /^image\//.test(f.type));
+    if (!lista.length) return;
+    marco();
+    let ox = 0;
+    for (const f of lista) {
+      try {
+        const im = await prepararImagem(f);
+        const larg = Math.min(520, im.w);
+        let x, y;
+        if (cx != null) { const w = paraMundo(cx, cy); x = w[0] - larg / 2 + ox; y = w[1] - larg * im.h / im.w / 2; }
+        else { const r = viewport.getBoundingClientRect(); const w = paraMundo(r.left + r.width / 2, r.top + r.height / 2); x = w[0] - larg / 2 + ox; y = w[1] - 80; }
+        imgs.push({ id: "i" + (seq++), src: im.src, x: Math.round(x), y: Math.round(y),
+                    w: larg, prop: im.h / im.w });
+        ox += 28;
+      } catch (e) { mostrarAviso("Não consegui ler uma das imagens.", 4000); }
+    }
+    renderImgs(); sincronizar();
+  }
+
+  function renderImgs() {
+    camadaImg.textContent = "";
+    imgs.forEach(im => {
+      const el = document.createElement("div");
+      el.className = "img" + (selImg === im.id ? " sel" : "");
+      el.style.left = im.x + "px"; el.style.top = im.y + "px"; el.style.width = im.w + "px";
+      el.dataset.id = im.id;
+
+      const i = document.createElement("img");
+      i.src = im.src; i.alt = ""; i.draggable = false;
+      el.appendChild(i);
+
+      const x = document.createElement("button");
+      x.className = "delImg"; x.textContent = "✕"; x.title = "Remover imagem";
+      x.addEventListener("click", e => {
+        e.stopPropagation();
+        marco(); imgs = imgs.filter(a => a.id !== im.id);
+        if (selImg === im.id) selImg = null;
+        renderImgs(); sincronizar();
+      });
+      el.appendChild(x);
+
+      const h = document.createElement("div");
+      h.className = "handle"; h.title = "Redimensionar";
+      el.appendChild(h);
+
+      el.addEventListener("pointerdown", ev => {
+        if (ev.target === h || ev.target === x) return;
+        ev.stopPropagation();
+        selImg = im.id; sel = null; marcarSel();
+        camadaImg.querySelectorAll(".img").forEach(a => a.classList.toggle("sel", a.dataset.id === im.id));
+        const sx = ev.clientX, sy = ev.clientY, ox = im.x, oy = im.y;
+        let mexeu = false, capturou = false;
+        const mv = e => {
+          const dx = (e.clientX - sx) / scale, dy = (e.clientY - sy) / scale;
+          if (!mexeu && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+          if (!mexeu) { marco(); mexeu = true; }
+          if (!capturou) { el.setPointerCapture(ev.pointerId); capturou = true; }
+          im.x = Math.round(ox + dx); im.y = Math.round(oy + dy);
+          el.style.left = im.x + "px"; el.style.top = im.y + "px";
+        };
+        const up = () => {
+          el.removeEventListener("pointermove", mv);
+          el.removeEventListener("pointerup", up);
+          if (mexeu) sincronizar();
+        };
+        el.addEventListener("pointermove", mv);
+        el.addEventListener("pointerup", up);
+      });
+
+      h.addEventListener("pointerdown", ev => {
+        ev.stopPropagation(); ev.preventDefault();
+        h.setPointerCapture(ev.pointerId);
+        const sx = ev.clientX, ow = im.w;
+        let mexeu = false;
+        const mv = e => {
+          const dx = (e.clientX - sx) / scale;
+          if (!mexeu && Math.abs(dx) < 3) return;
+          if (!mexeu) { marco(); mexeu = true; }
+          im.w = Math.max(60, Math.round(ow + dx));
+          el.style.width = im.w + "px";
+        };
+        const up = () => {
+          h.removeEventListener("pointermove", mv);
+          h.removeEventListener("pointerup", up);
+          if (mexeu) sincronizar();
+        };
+        h.addEventListener("pointermove", mv);
+        h.addEventListener("pointerup", up);
+      });
+
+      camadaImg.appendChild(el);
+    });
+  }
+
+  document.getElementById("btnImg").addEventListener("click", () => arqImg.click());
+  arqImg.addEventListener("change", () => { inserirImagens(arqImg.files); arqImg.value = ""; });
+
+  viewport.addEventListener("dragover", ev => { ev.preventDefault(); });
+  viewport.addEventListener("drop", ev => {
+    if (!ev.dataTransfer || !ev.dataTransfer.files.length) return;
+    ev.preventDefault();
+    inserirImagens(ev.dataTransfer.files, ev.clientX, ev.clientY);
+  });
+  document.addEventListener("paste", ev => {
+    if (!document.body.classList.contains("editando")) return;
+    if (ev.target && ev.target.isContentEditable) return;
+    const f = ev.clipboardData && ev.clipboardData.files;
+    if (f && f.length) { ev.preventDefault(); inserirImagens(f); }
+  });
+
+  /* ============ atalhos das ferramentas ============ */
+  document.addEventListener("keydown", ev => {
+    if (!document.body.classList.contains("editando")) return;
+    if (ev.target.isContentEditable || (ev.target.closest && ev.target.closest(".t, .d"))) return;
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    const k = ev.key.toLowerCase();
+    if (k === "v") usarFerramenta("mao");
+    if (k === "d") usarFerramenta("caneta");
+    if (k === "e") usarFerramenta("borracha");
+    if ((ev.key === "Delete" || ev.key === "Backspace") && selImg) {
+      ev.preventDefault();
+      marco(); imgs = imgs.filter(a => a.id !== selImg); selImg = null;
+      renderImgs(); sincronizar();
+    }
+    if (ev.key === "Escape" && ferramenta !== "mao") usarFerramenta("mao");
+  });
+
+  gravar();
+  renderBiblioteca();
+  abrirLinkCompartilhado();
+})();
+</script>
+</body></html>

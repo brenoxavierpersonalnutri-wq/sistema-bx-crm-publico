@@ -1,0 +1,12 @@
+# headturbo-livekit. Só entra no Caddyfile da stack /opt/head-turbo DEPOIS que o DNS existir
+# (livekit e turn -> 203.0.113.10, "DNS only" na Cloudflare), senão o Caddy falha o certificado.
+# GATEWAY_DOCKER = gateway da rede do Caddy (docker network inspect head-turbo_default
+#   -f '{{(index .IPAM.Config 0).Gateway}}'), porque o LiveKit roda em rede host.
+livekit.brenoxavier.com.br {
+    reverse_proxy GATEWAY_DOCKER:7880
+}
+
+# Não serve nada: existe para o Caddy emitir/renovar o certificado que o TURN/TLS (5349) usa.
+turn.brenoxavier.com.br {
+    respond 404
+}

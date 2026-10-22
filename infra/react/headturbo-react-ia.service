@@ -1,0 +1,31 @@
+# headturbo-react-ia: roda o `claude -p` da assinatura do Breno para a "Edição com IA" do Estúdio React.
+# Instalar: infra/react/instalar.sh (README.md, "Edição com IA"). Um pedido por vez, teto de 120 s.
+[Unit]
+Description=headturbo-react-ia (Claude da assinatura para a Edicao com IA do Estudio React)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=turbo
+Group=turbo
+# o socket fica no grupo headturbo-ia, que só o headturbo-react tem (SupplementaryGroups lá)
+SupplementaryGroups=headturbo-ia
+ExecStart=/usr/bin/python3 -I /usr/local/lib/headturbo-react/ia_ponte.py
+Environment=HOME=/home/turbo
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=REACT_IA_SOCKET=/run/headturbo-react-ia/ia.sock
+Environment=REACT_IA_MODELO=sonnet
+Environment=REACT_IA_TEMPO=120
+RuntimeDirectory=headturbo-react-ia
+RuntimeDirectoryMode=0755
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+Nice=10
+CPUWeight=20
+MemoryMax=1500M
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target

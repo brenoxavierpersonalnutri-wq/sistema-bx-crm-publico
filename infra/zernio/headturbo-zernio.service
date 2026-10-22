@@ -1,0 +1,36 @@
+# headturbo-zernio: CRM -> Zernio (publicar e agendar no Instagram). Instalar: infra/zernio/instalar.sh (README.md).
+[Unit]
+Description=headturbo-zernio (CRM -> Zernio: publicar e agendar no Instagram)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/node /usr/local/lib/headturbo-zernio/server.mjs
+# 172.18.0.1 = gateway da rede head-turbo_default: só o Caddy (container) alcança; a ufw libera só 172.18.0.0/16.
+Environment=ENDERECO=172.18.0.1
+Environment=PORTA=7891
+Environment=ZERNIO_CORS_ORIGENS=https://equipe.brenoxavier.com.br
+Environment=NODE_ENV=production
+# Segredos como credencial do systemd: só este processo lê; nada em variável de ambiente, argumento ou log.
+LoadCredential=zernio.key:/etc/headturbo-zernio/zernio.key
+LoadCredential=sync.secret:/etc/headturbo-zernio/sync.secret
+LoadCredential=webhook.secret:/etc/headturbo-zernio/webhook.secret
+LoadCredential=anon.key:/etc/headturbo-zernio/anon.key
+DynamicUser=yes
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+MemoryMax=256M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

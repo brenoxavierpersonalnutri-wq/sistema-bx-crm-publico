@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""Cadastra o webhook de uma sessão do OpenWA (padrão "closer"; outra com --sessao NOME) apontando para o openwa-webhook do CRM.
+
+Uso (root, na VPS):
+  sudo headturbo-openwa-webhook-crm            # seco: confere tudo e diz o que faria (padrão)
+  sudo headturbo-openwa-webhook-crm --sessao comercial-fit-2 --executar   # outra sessão (mesmo segredo HMAC)
+  sudo headturbo-openwa-webhook-crm --ignorar-crm  # seco, conferindo o lado do OpenWA mesmo com o CRM 404
+  sudo headturbo-openwa-webhook-crm --executar # cadastra (só se o endpoint do CRM já estiver publicado)
+  sudo headturbo-openwa-webhook-crm --executar --atualizar-segredo
+                                               # idem; se o webhook já existe, troca o segredo dele (PUT)
+                                               # pelo do arquivo — usado pelo headturbo-wa-parear
+
+URL por sessão (17/10/2026): o webhook vai para .../openwa-webhook?sessao=<NOME>, e o CRM grava cada
+mensagem no número dessa sessão (crm_numeros.sessao_openwa). Webhook que já existe com a URL sem ?sessao=
+(ou com outra sessão) é ATUALIZADO para a URL certa com --executar (PUT url); no seco, só diz que faria.
+Também imprime o id da sessão (o sessionId que o OpenWA assina em todo webhook; não é segredo).
+
+Segredos: lê API_MASTER_KEY de /opt/openwa/.env e o segredo HMAC de
+/etc/headturbo-wa-proxy/openwa-webhook.secret. Nenhum dos dois é impresso, vai em argv ou em log.
+Idempotente: se já existe webhook para a mesma URL, não cria outro.
+
+Fluxo de Grupo (19/10/2026): --com-eventos-grupo acrescenta group.join e group.leave (entradas/saídas e
+boas-vindas dos grupos das campanhas). Webhook que já existe sem esses eventos é ATUALIZADO (PUT events)
+com --executar; no seco, só diz que faria.
+  sudo headturbo-openwa-webhook-crm --sessao <NOME> --com-eventos-grupo            # seco
+  sudo headturbo-openwa-webhook-crm --sessao <NOME> --com-eventos-grupo --executar
+
+Instância (19/10/2026): --instancia grupos fala com a 2ª instância do OpenWA (motor Baileys, /opt/openwa-grupos,
+127.0.0.1:2787), com a chave admin DELA. Sem a opção: a principal, igual a antes. Mesmo segredo HMAC e mesma URL
+do CRM (o CRM separa pelo ?sessao=).
+  sudo headturbo-openwa-webhook-crm --instancia grupos --sessao grupos-1 --com-eventos-grupo            # seco
+  sudo headturbo-openwa-webhook-crm --instancia grupos --sessao grupos-1 --com-eventos-grupo --executar
+"""
+import json, re, sys, urllib.request, urllib.error
+
+URL_BASE = "https://SEU_PROJECT_REF.supabase.co/functions/v1/openwa-webhook"
+INSTANCIAS = {
+    "principal": ("http://127.0.0.1:2785/api", "/opt/openwa/.env"),
+    "grupos": ("http://127.0.0.1:2787/api", "/opt/openwa-grupos/.env"),
+}
+def _instancia_do_argv(args):
+    if "--instancia" not in args:
+        return "principal"
+    i = args.index("--instancia")
+    nome = args[i + 1] if i + 1 < len(args) else ""
+    if nome not in INSTANCIAS:
+        print(f"PARADO: --instancia deve ser uma de {sorted(INSTANCIAS)}.")
+        sys.exit(2)
+    return nome
+INSTANCIA = _instancia_do_argv(sys.argv[1:])
+BASE, ENV_OPENWA = INSTANCIAS[INSTANCIA]
+def _sessao_do_argv(args):
+    if "--sessao" in args:
+        i = args.index("--sessao")
+        nome = args[i + 1] if i + 1 < len(args) else ""
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", nome):
+            print("PARADO: --sessao precisa de um nome válido.")
+            sys.exit(2)
+        return nome
+    return "closer"
+
+SESSAO = _sessao_do_argv(sys.argv[1:])
+URL_CRM = f"{URL_BASE}?sessao={SESSAO}"
+EVENTOS = ["message.received", "message.sent", "message.ack"]
+EVENTOS_GRUPO = ["group.join", "group.leave"]
+if "--com-eventos-grupo" in sys.argv[1:]:
+    EVENTOS = EVENTOS + EVENTOS_GRUPO
+EXECUTAR = "--executar" in sys.argv[1:]
+# só no modo seco: segue mesmo com o CRM fora do ar, pra conferir o lado do OpenWA
+IGNORAR_CRM = "--ignorar-crm" in sys.argv[1:] and not EXECUTAR
+ATUALIZAR_SEGREDO = "--atualizar-segredo" in sys.argv[1:]
+
+def ler_env(caminho, nome):
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            if linha.startswith(nome + "="):
+                return linha.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+def pedir(metodo, caminho, chave=None, corpo=None, url=None):
+    dados = json.dumps(corpo).encode() if corpo is not None else None
+    req = urllib.request.Request(url or BASE + caminho, data=dados, method=metodo)
+    if chave:
+        req.add_header("X-API-Key", chave)
+    if dados is not None:
+        req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.status, json.loads(r.read() or b"null")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read() or b"null")
+        except Exception:
+            return e.code, None
+
+def main():
+    # 1) o endpoint do CRM precisa existir: sem assinatura ele responde 401; 404 = não publicado
+    st, _ = pedir("POST", "", corpo={}, url=URL_BASE)
+    print(f"openwa-webhook no CRM: HTTP {st}", "(publicado)" if st == 401 else "(NAO publicado)")
+    if st != 401 and not IGNORAR_CRM:
+        print("PARADO: publique o openwa-webhook antes (esperado 401 sem assinatura).")
+        return 3 if EXECUTAR else 0
+
+    chave = ler_env(ENV_OPENWA, "API_MASTER_KEY")
+    with open("/etc/headturbo-wa-proxy/openwa-webhook.secret", encoding="utf-8") as f:
+        segredo = f.read().strip()
+    if not chave or len(segredo) < 32:
+        print("PARADO: chave admin ou segredo do webhook ausente/curto.")
+        return 2
+
+    st, sessoes = pedir("GET", "/sessions", chave)
+    sessao = next((s for s in (sessoes or []) if isinstance(s, dict) and s.get("name") == SESSAO), None) if st == 200 else None
+    if not sessao:
+        print(f"PARADO: sessão '{SESSAO}' não encontrada (HTTP {st}).")
+        return 2
+    sid = sessao["id"]
+    print(f"instância {INSTANCIA} ({BASE}) · sessão {SESSAO}: status={sessao.get('status')} id={sid}")
+
+    st, lista = pedir("GET", f"/sessions/{sid}/webhooks", chave)
+    # o mesmo endpoint, com ou sem ?sessao= (o de antes era sem)
+    existentes = [w for w in (lista or []) if isinstance(w, dict) and str(w.get("url", "")).split("?")[0] == URL_BASE] if st == 200 else []
+    if existentes:
+        w = existentes[0]
+        url_ok = w.get("url") == URL_CRM
+        atuais = [e for e in (w.get("events") or []) if isinstance(e, str)]
+        faltam = [e for e in EVENTOS if e not in atuais]
+        print(f"JA EXISTE: webhook id={w.get('id')} eventos={w.get('events')} ativo={w.get('active', w.get('isActive'))} url_com_sessao={'sim' if url_ok else 'NAO'}.")
+        if not EXECUTAR:
+            if faltam:
+                print(f"SECO: acrescentaria os eventos {faltam}. Rode com --executar.")
+            print("Nada a fazer." if url_ok and not faltam else f"SECO: url {'ok' if url_ok else 'seria atualizada para ' + URL_CRM}. Rode com --executar.")
+            return 0
+        mudar = {}
+        if not url_ok:
+            mudar["url"] = URL_CRM
+        if ATUALIZAR_SEGREDO:
+            mudar["secret"] = segredo
+        if faltam:
+            mudar["events"] = atuais + faltam
+        if not mudar:
+            print("Nada a fazer.")
+            return 0
+        st, _ = pedir("PUT", f"/sessions/{sid}/webhooks/{w.get('id')}", chave, mudar)
+        print(f"webhook atualizado ({', '.join(k if k != 'secret' else f'segredo de {len(segredo)} chars' for k in mudar)}): HTTP {st}")
+        if st not in (200, 201):
+            return 1
+        st, teste = pedir("POST", f"/sessions/{sid}/webhooks/{w.get('id')}/test", chave, {})
+        resumo = {k: teste.get(k) for k in ("success", "statusCode", "status", "error") if isinstance(teste, dict) and k in teste}
+        print(f"teste de entrega: HTTP {st} {resumo}")
+        return 0
+
+    corpo = {"url": URL_CRM, "events": EVENTOS, "secret": segredo}
+    if not EXECUTAR:
+        print(f"SECO: criaria webhook url={URL_CRM} eventos={EVENTOS} (segredo de {len(segredo)} chars). Rode com --executar.")
+        return 0
+
+    st, criado = pedir("POST", f"/sessions/{sid}/webhooks", chave, corpo)
+    if st not in (200, 201) or not isinstance(criado, dict):
+        msg = criado.get("message") if isinstance(criado, dict) else None
+        print(f"FALHOU: HTTP {st} {msg if isinstance(msg, str) else ''}"[:300])
+        return 1
+    wid = criado.get("id")
+    print(f"CRIADO: webhook id={wid} eventos={criado.get('events')}")
+    st, teste = pedir("POST", f"/sessions/{sid}/webhooks/{wid}/test", chave, {})
+    resumo = {k: teste.get(k) for k in ("success", "statusCode", "status", "error") if isinstance(teste, dict) and k in teste}
+    print(f"teste de entrega: HTTP {st} {resumo}")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

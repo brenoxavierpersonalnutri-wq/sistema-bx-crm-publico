@@ -1,0 +1,1 @@
+ALTER TABLE public.consultations ADD COLUMN IF NOT EXISTS client_phone text DEFAULT NULL;

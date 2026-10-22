@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""Pareia a VPS com o CRM sem ninguém copiar segredo: busca, UMA vez, no wa-proxy-pareamento
+os dois segredos que o banco do CRM gerou e grava aqui.
+
+Instalado em /usr/local/sbin/headturbo-wa-parear (root, 0700). Uso (root, na VPS):
+  sudo headturbo-wa-parear            # seco: só confere se a função está publicada (sem consumir)
+  sudo headturbo-wa-parear --executar # consome o pareamento, grava, reinicia o proxy, cadastra o webhook
+
+Grava:
+  /etc/headturbo-wa-proxy/proxy.env              WA_PROXY_SECRET=... (troca só essa linha; o resto fica)
+  /etc/headturbo-wa-proxy/openwa-webhook.secret  o segredo HMAC do webhook (0600)
+Depois: reinicia SÓ o container headturbo-wa-proxy e roda
+  /usr/local/sbin/headturbo-openwa-webhook-crm --executar --atualizar-segredo
+
+Nunca imprime segredo: só tamanhos e status. A chamada sai por IPv4 (a função confere o IP da VPS).
+"""
+import json, os, socket, subprocess, sys, tempfile, urllib.error, urllib.request
+
+URL = "https://SEU_PROJECT_REF.supabase.co/functions/v1/wa-proxy-pareamento"
+DIR = "/etc/headturbo-wa-proxy"
+ENV = os.path.join(DIR, "proxy.env")
+WEBHOOK = os.path.join(DIR, "openwa-webhook.secret")
+COMPOSE_DIR = "/opt/headturbo-wa-proxy"
+CADASTRO = "/usr/local/sbin/headturbo-openwa-webhook-crm"
+EXECUTAR = "--executar" in sys.argv[1:]
+
+# força IPv4: a função só aceita o IPv4 público da VPS
+_orig = socket.getaddrinfo
+def _so_v4(host, *a, **k):
+    return [r for r in _orig(host, *a, **k) if r[0] == socket.AF_INET]
+socket.getaddrinfo = _so_v4
+
+
+def post(url, corpo=None, timeout=30):
+    req = urllib.request.Request(url, data=json.dumps(corpo or {}).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, r.read()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read()
+
+
+def gravar_0600(caminho, texto):
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(caminho), prefix=".tmp-")
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(texto)
+        os.replace(tmp, caminho)
+    except BaseException:
+        try: os.unlink(tmp)
+        except OSError: pass
+        raise
+    os.chown(caminho, 0, 0)
+
+
+def trocar_linha_env(caminho, nome, valor):
+    linhas = []
+    if os.path.exists(caminho):
+        with open(caminho, encoding="utf-8") as f:
+            linhas = [l for l in f.read().splitlines() if not l.startswith(nome + "=")]
+    linhas.append(f"{nome}={valor}")
+    gravar_0600(caminho, "\n".join(linhas) + "\n")
+
+
+def main():
+    if os.geteuid() != 0:
+        print("PARADO: rode como root (sudo).")
+        return 2
+    if not EXECUTAR:
+        # GET não consome nada: a função responde 405 se estiver publicada, 404 se não
+        req = urllib.request.Request(URL, method="GET")
+        try:
+            urllib.request.urlopen(req, timeout=20)
+            st = 200
+        except urllib.error.HTTPError as e:
+            st = e.code
+        print(f"wa-proxy-pareamento: HTTP {st}", "(publicada)" if st == 405 else "(NAO publicada?)")
+        print("SECO: nada foi consumido. Rode com --executar dentro da janela de 30 min da migration.")
+        return 0
+
+    st, corpo = post(URL)
+    if st != 200:
+        try: msg = json.loads(corpo).get("error", "")
+        except Exception: msg = ""
+        print(f"PARADO: pareamento respondeu HTTP {st} {str(msg)[:120]}")
+        if st == 410: print("Já pareado. Pra parear de novo: o dono roda no SQL  SELECT public.wa_pareamento_reabrir(30);")
+        if st == 403: print("Janela fechada ou origem recusada. O dono reabre no SQL: SELECT public.wa_pareamento_reabrir(30);")
+        return 1
+    dados = json.loads(corpo)
+    proxy = str(dados.get("wa_proxy_secret") or "")
+    webhook = str(dados.get("openwa_webhook_secret") or "")
+    if len(proxy) < 32 or len(webhook) < 32 or "\n" in proxy or "\n" in webhook:
+        print(f"PARADO: segredos ilegíveis (tamanhos {len(proxy)} e {len(webhook)}). Nada gravado.")
+        return 1
+
+    os.makedirs(DIR, mode=0o700, exist_ok=True)
+    trocar_linha_env(ENV, "WA_PROXY_SECRET", proxy)
+    gravar_0600(WEBHOOK, webhook + "\n")
+    print(f"gravado: WA_PROXY_SECRET ({len(proxy)} chars) em {ENV}; segredo do webhook ({len(webhook)} chars) em {WEBHOOK}")
+
+    r = subprocess.run(["docker", "compose", "up", "-d", "--force-recreate", "--no-deps", "wa-proxy"],
+                       cwd=COMPOSE_DIR, capture_output=True, text=True)
+    print(f"proxy recriado: rc={r.returncode}")
+    if r.returncode != 0:
+        print("ATENCAO: o proxy não subiu de novo; confira com  docker ps --filter name=headturbo-wa-proxy")
+        return 1
+
+    if os.path.exists(CADASTRO):
+        r = subprocess.run([CADASTRO, "--executar", "--atualizar-segredo"], capture_output=True, text=True)
+        # a saída do cadastro já é sem segredo; repassa
+        sys.stdout.write(r.stdout)
+        print(f"cadastro do webhook: rc={r.returncode}")
+        return 0 if r.returncode == 0 else 1
+    print(f"ATENCAO: {CADASTRO} não existe; webhook do OpenWA não cadastrado.")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

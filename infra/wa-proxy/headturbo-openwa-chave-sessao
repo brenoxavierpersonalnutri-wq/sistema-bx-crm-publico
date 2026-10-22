@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""Gera a chave OPERATOR do OpenWA de UMA sessão extra e grava no proxy.env do headturbo-wa-proxy.
+
+Instalado em /usr/local/sbin/headturbo-openwa-chave-sessao (root, 0700). Uso (root, na VPS):
+  sudo headturbo-openwa-chave-sessao comercial-fit-2             # seco: diz o que faria
+  sudo headturbo-openwa-chave-sessao comercial-fit-2 --executar  # cria a chave e grava
+
+A chave nasce restrita: role=operator, allowedSessions=[id daquela sessão], allowedIps=[172.20.0.50]
+(IP fixo do proxy). Grava em /etc/headturbo-wa-proxy/proxy.env (root 0600, troca atômica):
+  OPENWA_OPERATOR_KEY_<NOME>=...   OPENWA_SESSION_ID_<NOME>=...   e põe o nome em OPENWA_SESSOES_EXTRAS.
+Idempotente: se o proxy.env já tem a chave da sessão e existe chave ativa com o nome, não faz nada.
+Chave ativa com o nome mas sem a linha no proxy.env (texto puro não volta): revoga a antiga e cria outra.
+Segredos: lê API_MASTER_KEY de /opt/openwa/.env. Nenhuma chave é impressa, vai em argv ou em log.
+Não reinicia nada: quem chama recria o container do proxy depois.
+
+Instância (19/10/2026): --instancia grupos usa a 2ª instância do OpenWA (motor Baileys, /opt/openwa-grupos,
+127.0.0.1:2787) e o IP do proxy na rede dela (172.21.0.50). Sem a opção: a principal, igual a antes.
+  sudo headturbo-openwa-chave-sessao grupos-1 --instancia grupos --executar
+"""
+import json, os, re, sys, tempfile, urllib.error, urllib.request
+
+INSTANCIAS = {
+    "principal": {"base": "http://127.0.0.1:2785/api", "env": "/opt/openwa/.env", "ip": "172.20.0.50"},
+    "grupos": {"base": "http://127.0.0.1:2787/api", "env": "/opt/openwa-grupos/.env", "ip": "172.21.0.50"},
+}
+ENV = "/etc/headturbo-wa-proxy/proxy.env"
+args = sys.argv[1:]
+INSTANCIA = "principal"
+if "--instancia" in args:
+    i = args.index("--instancia")
+    INSTANCIA = args[i + 1] if i + 1 < len(args) else ""
+    del args[i:i + 2]
+if INSTANCIA not in INSTANCIAS:
+    print(f"PARADO: --instancia deve ser uma de {sorted(INSTANCIAS)}.")
+    sys.exit(2)
+BASE = INSTANCIAS[INSTANCIA]["base"]
+ENV_OPENWA = INSTANCIAS[INSTANCIA]["env"]
+IP_PROXY = INSTANCIAS[INSTANCIA]["ip"]
+EXECUTAR = "--executar" in args
+nomes = [a for a in args if not a.startswith("--")]
+
+
+def ler_env(caminho, nome):
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            if linha.startswith(nome + "="):
+                return linha.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def pedir(metodo, caminho, chave, corpo=None):
+    dados = json.dumps(corpo).encode() if corpo is not None else None
+    req = urllib.request.Request(BASE + caminho, data=dados, method=metodo)
+    req.add_header("X-API-Key", chave)
+    if dados is not None:
+        req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.status, json.loads(r.read() or b"null")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read() or b"null")
+        except Exception:
+            return e.code, None
+
+
+def gravar_0600(caminho, texto):
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(caminho), prefix=".tmp-")
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(texto)
+        os.replace(tmp, caminho)
+    except BaseException:
+        try: os.unlink(tmp)
+        except OSError: pass
+        raise
+    os.chown(caminho, 0, 0)
+
+
+def main():
+    if os.geteuid() != 0:
+        print("PARADO: rode como root (sudo).")
+        return 2
+    if len(nomes) != 1 or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,40}", nomes[0]) or nomes[0] == "closer":
+        print("PARADO: informe UMA sessão extra (minúsculas, números e hífen; closer não).")
+        return 2
+    sessao = nomes[0]
+    suf = sessao.upper().replace("-", "_")
+    var_chave, var_id = f"OPENWA_OPERATOR_KEY_{suf}", f"OPENWA_SESSION_ID_{suf}"
+    nome_chave = f"crm-wa-proxy-{sessao}"
+
+    admin = ler_env(ENV_OPENWA, "API_MASTER_KEY")
+    if not admin:
+        print(f"PARADO: chave admin ausente em {ENV_OPENWA}.")
+        return 2
+    st, sessoes = pedir("GET", "/sessions", admin)
+    s = next((x for x in (sessoes or []) if isinstance(x, dict) and x.get("name") == sessao), None) if st == 200 else None
+    if not s:
+        print(f"PARADO: sessão '{sessao}' não existe no OpenWA (HTTP {st}).")
+        return 2
+    sid = str(s["id"])
+    print(f"instância {INSTANCIA} ({BASE}) · sessão {sessao}: id={sid} status={s.get('status')}")
+
+    linhas = open(ENV, encoding="utf-8").read().splitlines() if os.path.exists(ENV) else []
+    tem_linha = any(l.startswith(var_chave + "=") and len(l) > len(var_chave) + 10 for l in linhas)
+    st, chaves = pedir("GET", "/auth/api-keys", admin)
+    if st != 200:
+        print(f"PARADO: não li as chaves (HTTP {st}).")
+        return 2
+    ativas = [k for k in chaves if isinstance(k, dict) and k.get("name") == nome_chave and k.get("isActive")]
+    if tem_linha and ativas:
+        print(f"JA EXISTE: chave {nome_chave} ativa ({ativas[0].get('keyPrefix')}…) e {var_chave} no proxy.env. Nada a fazer.")
+        return 0
+    if not EXECUTAR:
+        acao = f"revogaria {len(ativas)} chave(s) órfã(s) e " if ativas else ""
+        print(f"SECO: {acao}criaria {nome_chave} (operator, sessão {sid}, IP {IP_PROXY}) e gravaria {var_chave}/{var_id}. Rode com --executar.")
+        return 0
+    for k in ativas:
+        st, _ = pedir("POST", f"/auth/api-keys/{k['id']}/revoke", admin, {})
+        print(f"revogada chave órfã {k.get('keyPrefix')}…: HTTP {st}")
+        if st not in (200, 201):
+            return 1
+
+    st, criada = pedir("POST", "/auth/api-keys", admin,
+                       {"name": nome_chave, "role": "operator", "allowedSessions": [sid], "allowedIps": [IP_PROXY]})
+    bruta = criada.get("apiKey") if isinstance(criada, dict) else None
+    if st not in (200, 201) or not isinstance(bruta, str) or len(bruta) < 20 or "\n" in bruta:
+        msg = criada.get("message") if isinstance(criada, dict) else None
+        print(f"FALHOU: criar chave HTTP {st} {msg if isinstance(msg, str) else ''}"[:300])
+        return 1
+    print(f"CRIADA: {nome_chave} id={criada.get('id')} prefixo={criada.get('keyPrefix')} "
+          f"sessões={criada.get('allowedSessions')} ips={criada.get('allowedIps')}")
+
+    extras = []
+    for l in linhas:
+        if l.startswith("OPENWA_SESSOES_EXTRAS="):
+            extras = [x.strip() for x in l.split("=", 1)[1].split(",") if x.strip()]
+    if sessao not in extras:
+        extras.append(sessao)
+    novas = [l for l in linhas if not l.startswith((var_chave + "=", var_id + "=", "OPENWA_SESSOES_EXTRAS="))]
+    novas += [f"OPENWA_SESSOES_EXTRAS={','.join(extras)}", f"{var_chave}={bruta}", f"{var_id}={sid}"]
+    gravar_0600(ENV, "\n".join(novas) + "\n")
+    print(f"gravado em {ENV}: {var_chave} ({len(bruta)} chars), {var_id}, OPENWA_SESSOES_EXTRAS={','.join(extras)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

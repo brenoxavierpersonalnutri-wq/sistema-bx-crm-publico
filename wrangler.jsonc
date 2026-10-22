@@ -1,0 +1,13 @@
+// Configuração do Cloudflare Workers Builds (serviço: funnel-friend-tool).
+// O serviço está conectado a este repositório desde maio, mas falhava em todo
+// push por não achar este arquivo. Modo assets-only: serve o build do Vite
+// (dist/) como site estático, com fallback de SPA — /feedback, /pesquisa-satisfacao
+// e qualquer rota do React Router caem no index.html e o app resolve.
+{
+  "name": "funnel-friend-tool",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

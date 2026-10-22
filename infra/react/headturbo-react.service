@@ -1,0 +1,52 @@
+# headturbo-react: Estúdio React do CRM (upload + montagem do react). Instalar: infra/react/instalar.sh (README.md).
+[Unit]
+Description=headturbo-react (Estudio React do CRM: upload e montagem do react)
+After=network-online.target docker.service headturbo-react-ia.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/opt/headturbo-react/venv/bin/python /usr/local/lib/headturbo-react/headturbo-react.py
+# 172.18.0.1 = gateway da rede head-turbo_default: só o Caddy (container) alcança; a ufw libera só 172.18.0.0/16.
+Environment=REACT_ENDERECO=172.18.0.1
+Environment=REACT_PORTA=7892
+Environment=REACT_PASTA=/var/lib/headturbo-react
+Environment=REACT_ORIGENS=https://equipe.brenoxavier.com.br
+Environment=REACT_FONTES=/usr/local/lib/headturbo-react/fontes
+Environment=REACT_WHISPER_MODELO=/usr/local/share/headturbo-react/modelo
+Environment=REACT_FFMPEG_THREADS=2
+Environment=HF_HUB_OFFLINE=1
+Environment=XDG_CACHE_HOME=/var/lib/headturbo-react/.cache
+Environment=HOME=/var/lib/headturbo-react
+# anon key (pública, do site) e o segredo que assina o endereço do vídeo pronto: credenciais do systemd
+LoadCredential=anon.key:/etc/headturbo-react/anon.key
+LoadCredential=url.secret:/etc/headturbo-react/url.secret
+# Edição com IA: o socket do headturbo-react-ia (claude -p como turbo) só abre para o grupo headturbo-ia
+SupplementaryGroups=headturbo-ia
+Environment=REACT_IA_SOCKET=/run/headturbo-react-ia/ia.sock
+DynamicUser=yes
+StateDirectory=headturbo-react
+StateDirectoryMode=0750
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+# A montagem (ffmpeg + Whisper) mora neste serviço: uma por vez, nice 19 + ionice idle, 2 threads.
+# Teto de 2 vCPU das 4 e peso baixo: na disputa com o LiveKit (lives), o OpenWA e o wa-proxy (WhatsApp), peso 100,
+# o react leva ~10% e espera; ocioso, usa as 2 vCPU inteiras.
+Nice=10
+CPUQuota=200%
+CPUWeight=10
+IOWeight=10
+MemoryMax=3G
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target

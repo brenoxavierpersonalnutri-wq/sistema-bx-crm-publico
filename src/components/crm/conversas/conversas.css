@@ -1,0 +1,69 @@
+/* Cores do layout de conversa (padrão de mensageria) num lugar só, com variante escura.
+   O resto da tela usa os tokens do projeto (background, muted, success...). */
+.crm-chat {
+  --chat-fundo: #efeae2;
+  --chat-padrao: rgba(17, 27, 33, 0.045);
+  --chat-barra: #f0f2f5;
+  --chat-bolha-out: #d9fdd3;
+  --chat-bolha-in: #ffffff;
+  --chat-texto: #111b21;
+  --chat-meta: #667781;
+  --chat-lido: #53bdeb;
+  --chat-campo: #ffffff;
+  --chat-separador: #ffffff;
+}
+.dark .crm-chat {
+  --chat-fundo: #0b141a;
+  --chat-padrao: rgba(233, 237, 239, 0.035);
+  --chat-barra: #202c33;
+  --chat-bolha-out: #005c4b;
+  --chat-bolha-in: #202c33;
+  --chat-texto: #e9edef;
+  --chat-meta: #8696a0;
+  --chat-campo: #2a3942;
+  --chat-separador: #182229;
+}
+
+.crm-chat-fundo {
+  background-color: var(--chat-fundo);
+  background-image:
+    radial-gradient(var(--chat-padrao) 1.2px, transparent 1.3px),
+    radial-gradient(var(--chat-padrao) 1.2px, transparent 1.3px);
+  background-size: 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+.crm-chat-barra { background-color: var(--chat-barra); color: var(--chat-texto); }
+.crm-chat-campo { background-color: var(--chat-campo); color: var(--chat-texto); }
+.crm-chat-texto { color: var(--chat-texto); }
+.crm-chat-meta { color: var(--chat-meta); }
+.crm-chat-lido { color: var(--chat-lido); }
+.crm-chat-separador { background-color: var(--chat-separador); color: var(--chat-meta); }
+
+.crm-bolha { color: var(--chat-texto); position: relative; }
+.crm-bolha-out { background-color: var(--chat-bolha-out); }
+.crm-bolha-in { background-color: var(--chat-bolha-in); }
+
+/* "rabinho" só na primeira bolha de cada grupo */
+.crm-bolha-cauda.crm-bolha-out { border-top-right-radius: 0; }
+.crm-bolha-cauda.crm-bolha-in { border-top-left-radius: 0; }
+.crm-bolha-cauda.crm-bolha-out::before,
+.crm-bolha-cauda.crm-bolha-in::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 13px;
+}
+.crm-bolha-cauda.crm-bolha-out::before {
+  right: -8px;
+  background: linear-gradient(to bottom left, var(--chat-bolha-out) 50%, transparent 50%);
+}
+.crm-bolha-cauda.crm-bolha-in::before {
+  left: -8px;
+  background: linear-gradient(to bottom right, var(--chat-bolha-in) 50%, transparent 50%);
+}
+
+.crm-audio-faixa { accent-color: #00a884; }
+
+/* figurinha: sem bolha, só a imagem (como no WhatsApp) */
+.crm-figurinha { color: var(--chat-texto); position: relative; }

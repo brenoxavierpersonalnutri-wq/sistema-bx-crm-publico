@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+"""Entrega ao CRM, UMA vez, a ANTHROPIC_API_KEY (Claude da conta do Breno) sem ninguém colar a chave em chat ou painel.
+
+De onde vem: o Breno cria a chave em console.anthropic.com (API Keys) e ela vai pro cofre do Mac e da VPS pelo
+guardar-chave do kit (passo a passo em infra/anthropic/README.md). Aqui (root, na VPS) o script lê a chave do cofre
+do usuário do kit (padrão /home/turbo/.config/head-turbo/cofre.env; outro caminho: HEADTURBO_COFRE=/caminho; sem
+cofre, cai na variável de ambiente ANTHROPIC_API_KEY), lê o WA_PROXY_SECRET de /etc/headturbo-wa-proxy/proxy.env
+(já pareado com o CRM), assina "<ts>.<nonce>.<corpo>" com HMAC-SHA256 e faz POST (IPv4) em
+.../functions/v1/anthropic-pareamento.
+
+Instalado em /usr/local/sbin/headturbo-anthropic-parear (root, 0700). Uso:
+  sudo headturbo-anthropic-parear             # seco: confere cofre, a chave na Anthropic (GET /v1/models, não gasta
+                                              # crédito) e a publicação da função; nada é enviado ao CRM
+  sudo headturbo-anthropic-parear --executar  # envia uma vez; mostra só status HTTP e o hash curto
+
+Nunca imprime a chave: só nomes, tamanhos, status e o hash (12 hex do sha256 do valor gravado).
+Rearmar (trocou a chave): o dono roda no SQL  SELECT public.anthropic_pareamento_reabrir();
+"""
+import hashlib, hmac, json, os, re, secrets, socket, sys, time, urllib.error, urllib.request
+
+URL = "https://SEU_PROJECT_REF.supabase.co/functions/v1/anthropic-pareamento"
+URL_MODELOS = "https://api.anthropic.com/v1/models?limit=1"
+COFRE = os.environ.get("HEADTURBO_COFRE", "/home/turbo/.config/head-turbo/cofre.env")
+PROXY = "/etc/headturbo-wa-proxy/proxy.env"
+EXECUTAR = "--executar" in sys.argv[1:]
+
+# força IPv4: a função só aceita o IPv4 público da VPS
+_orig = socket.getaddrinfo
+def _so_v4(host, *a, **k):
+    return [r for r in _orig(host, *a, **k) if r[0] == socket.AF_INET]
+socket.getaddrinfo = _so_v4
+
+
+def ler_env(caminho):
+    out = {}
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+            if linha.startswith("export "):
+                linha = linha[7:].strip()
+            if not linha or linha.startswith("#") or "=" not in linha:
+                continue
+            k, v = linha.split("=", 1)
+            v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                v = v[1:-1]
+            out[k.strip()] = v
+    return out
+
+
+def corpo_canonico(chave):
+    """Mesma forma que a função grava (validarCorpoAnthropic): o hash tem de bater."""
+    return json.dumps({"api_key": chave}, separators=(",", ":"))
+
+
+def testar_na_anthropic(chave):
+    """GET /v1/models: só lista modelos, não gasta crédito. Devolve o status HTTP (ou texto do erro de rede)."""
+    req = urllib.request.Request(URL_MODELOS, method="GET", headers={
+        "x-api-key": chave,
+        "anthropic-version": "2023-06-01",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+    except Exception as e:
+        return type(e).__name__
+
+
+def main():
+    if os.geteuid() != 0:
+        print("PARADO: rode como root (sudo).")
+        return 2
+    try:
+        proxy = ler_env(PROXY)
+    except OSError as e:
+        print(f"PARADO: não consegui ler {e.filename} ({e.strerror}).")
+        return 2
+    try:
+        cofre = ler_env(COFRE)
+    except OSError:
+        cofre = {}
+    if cofre.get("ANTHROPIC_API_KEY", "").strip():
+        chave, origem = cofre["ANTHROPIC_API_KEY"].strip(), COFRE
+    else:
+        chave, origem = os.environ.get("ANTHROPIC_API_KEY", "").strip(), f"{COFRE} (sem a chave) / ambiente"
+
+    segredo_hmac = proxy.get("WA_PROXY_SECRET", "").strip()
+    chave_ok = bool(re.fullmatch(r"sk-ant-[A-Za-z0-9_-]{20,300}", chave))
+    print(f"{origem}: ANTHROPIC_API_KEY={len(chave)} chars ({'ok' if chave_ok else 'FALTA/formato'})")
+    print(f"{PROXY}: WA_PROXY_SECRET={len(segredo_hmac)} chars")
+    if not chave_ok or len(segredo_hmac) < 32:
+        print("PARADO: falta valor ou formato errado. Nada enviado.")
+        return 1
+
+    corpo = corpo_canonico(chave)
+    hash_local = hashlib.sha256(corpo.encode()).hexdigest()[:12]
+
+    if not EXECUTAR:
+        st_a = testar_na_anthropic(chave)
+        nota = {200: "(chave válida)", 401: "(chave INVÁLIDA ou revogada)", 403: "(chave sem permissão)"}.get(st_a, "")
+        print(f"Anthropic GET /v1/models: {st_a} {nota}".rstrip())
+        # GET não grava nada: 405 = publicada, 404 = não publicada
+        try:
+            urllib.request.urlopen(urllib.request.Request(URL, method="GET"), timeout=20)
+            st = 200
+        except urllib.error.HTTPError as e:
+            st = e.code
+        except Exception as e:
+            print(f"anthropic-pareamento: sem resposta ({type(e).__name__})")
+            return 1
+        print(f"anthropic-pareamento: HTTP {st}", "(publicada)" if st == 405 else "(NAO publicada?)")
+        print(f"hash do que seria enviado: {hash_local}")
+        print("SECO: nada foi enviado. Depois da migration 20261101120000 e da função publicada: --executar")
+        return 0 if st_a == 200 else 1
+
+    ts = str(int(time.time()))
+    nonce = secrets.token_urlsafe(24)
+    assinatura = hmac.new(segredo_hmac.encode(), f"{ts}.{nonce}.{corpo}".encode(), hashlib.sha256).hexdigest()
+    req = urllib.request.Request(URL, data=corpo.encode(), method="POST", headers={
+        "Content-Type": "application/json",
+        "x-live-ts": ts,
+        "x-live-nonce": nonce,
+        "x-live-assinatura": assinatura,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            st, resp = r.status, r.read()
+    except urllib.error.HTTPError as e:
+        st, resp = e.code, e.read()
+    except Exception as e:
+        print(f"PARADO: sem resposta ({type(e).__name__})")
+        return 1
+    try:
+        dados = json.loads(resp)
+    except Exception:
+        dados = {}
+
+    if st == 200:
+        hash_remoto = str(dados.get("hash", ""))
+        confere = hmac.compare_digest(hash_remoto, hash_local)
+        print(f"anthropic-pareamento: HTTP 200 hash={hash_remoto} ({'confere' if confere else 'NAO CONFERE com o local ' + hash_local})")
+        return 0 if confere else 1
+    print(f"anthropic-pareamento: HTTP {st} {str(dados.get('error', ''))[:120]}")
+    if st == 410:
+        print("Já pareado. Pra gravar de novo: o dono roda no SQL  SELECT public.anthropic_pareamento_reabrir();")
+    elif st == 403:
+        print("Origem recusada (a função só aceita o IPv4 público da VPS).")
+    elif st == 401:
+        print("Assinatura recusada: relógio da VPS fora (janela 5 min) ou WA_PROXY_SECRET diferente do CRM.")
+    elif st == 404:
+        print("Função não publicada ainda.")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

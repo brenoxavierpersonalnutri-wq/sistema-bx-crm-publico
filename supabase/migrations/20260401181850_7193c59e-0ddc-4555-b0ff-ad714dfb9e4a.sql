@@ -1,0 +1,1 @@
+ALTER TABLE public.consultations ADD COLUMN IF NOT EXISTS is_incomplete_flow boolean DEFAULT false;

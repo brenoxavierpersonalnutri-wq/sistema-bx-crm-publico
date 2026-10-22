@@ -1,0 +1,1 @@
+ALTER TABLE consultations ADD COLUMN IF NOT EXISTS disqualified BOOLEAN DEFAULT false;

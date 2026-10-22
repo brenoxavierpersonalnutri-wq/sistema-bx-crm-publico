@@ -1,0 +1,15 @@
+
+# headturbo-wa-proxy (CRM -> OpenWA). Só entra no Caddyfile depois que o DNS
+# wa-gw.brenoxavier.com.br -> 203.0.113.10 existir (senão o Caddy falha o certificado).
+wa-gw.brenoxavier.com.br {
+    request_body {
+        max_size 64KB
+    }
+    @proxy path /v1/* /healthz
+    handle @proxy {
+        reverse_proxy headturbo-wa-proxy:8080
+    }
+    handle {
+        respond 404
+    }
+}

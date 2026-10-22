@@ -1,0 +1,17 @@
+# Copiar para /etc/headturbo-livekit/egress.yaml (root, 0600) e preencher. NÃO commitar o real.
+api_key: TROCAR_PELA_API_KEY
+api_secret: TROCAR_PELO_API_SECRET
+# público (TLS pelo Caddy): o Chrome do Egress abre https://equipe.../lives/render/:id e conecta
+# nesta URL; ws://127.0.0.1 a partir de página https esbarra no bloqueio de rede local do Chrome.
+ws_url: wss://livekit.brenoxavier.com.br
+redis:
+  address: 127.0.0.1:6380
+health_port: 9091
+logging:
+  level: info
+cpu_cost:
+  # VPS de 4 vCPU com cpus: 3.0 no compose: um RoomComposite 1080p30 por vez com folga.
+  # Transmissão + Gravar ao mesmo tempo podem não caber: a gravação automática do Cloudflare
+  # Stream é o plano A; o botão Gravar (MP4 local) é o plano B.
+  room_composite_cpu_cost: 2.5
+  web_cpu_cost: 2.5

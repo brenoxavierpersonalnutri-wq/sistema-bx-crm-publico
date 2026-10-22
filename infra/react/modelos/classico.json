@@ -1,0 +1,23 @@
+{
+  "id": "classico",
+  "nome": "Clássico (amarelo)",
+  "descricao": "A legenda da primeira versão: maiúsculas em Archivo Black, palavra da vez em amarelo e palavras-chave em verde.",
+  "ordem": 9,
+  "legenda": {
+    "fonte": "Archivo Black",
+    "negrito": false,
+    "tamanho": 84,
+    "cor": "FFFFFF",
+    "cor_contorno": "000000",
+    "contorno": 7,
+    "sombra": 3,
+    "maiusculas": true,
+    "karaoke": true,
+    "destacar_chaves": true,
+    "min_palavras": 1,
+    "max_palavras": 4,
+    "max_letras": 16,
+    "y": null
+  },
+  "titulo": { "fonte": "Archivo Black", "tamanho": 72, "maiusculas": true }
+}

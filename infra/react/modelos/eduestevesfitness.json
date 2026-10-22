@@ -1,0 +1,20 @@
+{
+  "id": "eduestevesfitness",
+  "nome": "Edu Esteves",
+  "descricao": "Ritmo do @eduestevesfitness: corta toda pausa acima de 0,4 s, título de gancho de 2 linhas no centro por 3 a 5 s, sem legenda, punch-in a cada 3 a 4 s e final seco.",
+  "ordem": 2,
+  "fonte_do_estudo": "FITNESS/inteligencia/modelo-edicao-eduestevesfitness.md (Bianca, 21/10/2026): itens 1, 2, 3, 4, 7 e 8 e a receita (a) 2, 4, 5, 10 e 11",
+  "corte": { "silencio_longo": 0.4, "folga_antes": 0.08, "folga_depois": 0.12 },
+  "legenda": { "mostrar": false },
+  "titulo": {
+    "estilo": "gancho",
+    "fonte": "Archivo Black",
+    "tamanho": 80,
+    "maiusculas": true,
+    "y": 768,
+    "duracao_min": 3,
+    "duracao_max": 5,
+    "sombra": 4
+  },
+  "zoom": { "punch_in_seg": 3.5 }
+}

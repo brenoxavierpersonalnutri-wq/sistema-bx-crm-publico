@@ -1,0 +1,37 @@
+# Vídeo da aula (upload + entrega pro LiveKit Ingress). Instalar: README.md, seção "Vídeo da aula".
+[Unit]
+Description=headturbo-aulas (upload do video da aula para o Ingress do LiveKit)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/lib/headturbo-aulas/headturbo-aulas.py
+Environment=AULAS_PASTA=/var/lib/headturbo-aulas
+Environment=AULAS_ENDERECO=172.18.0.1
+Environment=AULAS_PORTA=7890
+Environment=AULAS_SEGREDO_ARQ=%d/egress.yaml
+# a chave do LiveKit chega como credencial (só este processo lê; nada em variável de ambiente)
+LoadCredential=egress.yaml:/etc/headturbo-livekit/egress.yaml
+DynamicUser=yes
+StateDirectory=headturbo-aulas
+StateDirectoryMode=0750
+Restart=always
+RestartSec=3
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+# A conversão (ffmpeg -> H.264 720p, uma por vez, nice 19 + ionice idle, 2 threads) mora neste serviço.
+# Teto de 2 vCPU das 4, e peso baixo: na disputa com os containers do LiveKit (Ingress/Egress, peso 100) o serviço
+# leva ~10% e a live nunca fica sem CPU por causa de uma conversão. Ocioso, a conversão usa as 2 vCPU inteiras.
+MemoryMax=1536M
+CPUQuota=200%
+CPUWeight=10
+IOWeight=10
+
+[Install]
+WantedBy=multi-user.target

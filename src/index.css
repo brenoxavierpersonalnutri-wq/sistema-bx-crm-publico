@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 222 47% 11%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --noshow: 0 72% 51%;
+    --noshow-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 222 47% 11%;
+
+    --radius: 0.75rem;
+
+    --chart-revenue: 152 60% 40%;
+    --chart-expense: 0 72% 51%;
+    --chart-traffic: 220 70% 55%;
+    --chart-campaign: 38 92% 50%;
+    --chart-tools: 280 60% 55%;
+    --chart-collaborators: 340 65% 55%;
+    --chart-tax: 25 85% 45%;
+
+    --chart-funnel-organico: 152 60% 42%;
+    --chart-funnel-social: 220 70% 55%;
+    --chart-funnel-lowticket: 38 92% 50%;
+    --chart-funnel-direto: 280 60% 55%;
+    --chart-funnel-indicacao: 340 65% 55%;
+    --chart-funnel-individual: 190 60% 45%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+    --noshow: 0 72% 51%;
+    --noshow-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-revenue: 152 50% 45%;
+    --chart-expense: 0 60% 50%;
+    --chart-traffic: 220 60% 60%;
+    --chart-campaign: 38 80% 55%;
+    --chart-tools: 280 50% 60%;
+    --chart-collaborators: 340 55% 60%;
+    --chart-tax: 25 75% 50%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+/* Privacy mode: blur any element opted-in via .money-blur when active */
+body.privacy-on .money-blur {
+  filter: blur(8px);
+  user-select: none;
+  pointer-events: none;
+}
+
+
+/* ===== Tema NOVAAV — páginas públicas de captação (/avaliacao, /individual, /vsl) =====
+   Escopo isolado: as variáveis só valem dentro de .novaav-theme, o CRM não muda. */
+.novaav-theme {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 240 6% 10%;
+  --card-foreground: 0 0% 100%;
+  --popover: 240 6% 10%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 142 71% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 6% 10%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 45 100% 51%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 142 71% 45%;
+  font-family: 'Inter', 'DM Sans', sans-serif;
+}
+
+.novaav-theme h1,
+.novaav-theme h2,
+.novaav-theme h3,
+.novaav-theme h4,
+.novaav-theme h5,
+.novaav-theme h6 {
+  font-family: 'Inter', 'DM Sans', sans-serif;
+}
+
+.novaav-theme .text-gold {
+  color: hsl(45, 100%, 51%);
+}
+
+.novaav-theme .glow-green {
+  box-shadow: 0 0 60px hsla(142, 71%, 45%, 0.3);
+}
+
+.novaav-theme .blur-glow {
+  background: hsla(142, 71%, 45%, 0.05);
+  filter: blur(120px);
+}
+
+/* Barra de rolagem horizontal SEMPRE visível — o macOS esconde a nativa por
+   padrão, o que faz tabelas largas parecerem cortadas sem saída. */
+.scroll-x-visible {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.7) transparent;
+}
+
+.scroll-x-visible::-webkit-scrollbar {
+  height: 12px;
+  -webkit-appearance: none;
+}
+
+.scroll-x-visible::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.4);
+  border-radius: 999px;
+}
+
+.scroll-x-visible::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.6);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scroll-x-visible::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+  background-clip: padding-box;
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<!--
+  Arquivo de /assets/ que não existe recebe ESTA página com status 404,
+  em vez do index.html com 200.
+
+  Por quê: sem este arquivo, o Cloudflare Pages responde qualquer caminho
+  desconhecido com o index.html (modo SPA, porque o site não tem /404.html).
+  Num deploy em andamento, o navegador pediu um pedaço novo do app
+  (/assets/receipt-<hash>.js) antes de ele estar publicado, recebeu HTML com
+  200 e guardou esse HTML por 4 horas no lugar do .js (a zona sobe o
+  max-age dos .js pra 14400). Toda rota preguiçosa quebrava com "Failed to
+  fetch dynamically imported module" e recarregar não resolvia.
+
+  Como funciona: no "não encontrado", o Pages sobe a árvore a partir do
+  caminho pedido procurando um 404.html; acha este para tudo sob /assets/ e
+  responde 404 com cache-control: no-store (o Pages força isso em todo 404),
+  então nem a borda nem o navegador guardam. Rotas do app (/alunas, /vaga,
+  /r/implementacao...) não passam por /assets/ e continuam no index.html.
+
+  A linha "/* /index.html 200" do _redirects é descartada pelo Pages
+  ("Infinite loop detected"), então o fallback de SPA vem do modo padrão,
+  não dela. Não renomear nem mover este arquivo.
+-->
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="robots" content="noindex"><title>404</title></head>
+<body>404 - arquivo não encontrado</body>
+</html>

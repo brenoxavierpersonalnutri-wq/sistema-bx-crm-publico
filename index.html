@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR" translate="no" class="notranslate">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- O sistema é em português. Com lang="en" o Chrome do celular oferecia
+         (e aplicava) "traduzir para o português": a tradução troca os textos da
+         tela por <font>, o React perde a referência deles e a tela quebrava ao
+         fechar um popover (ex.: remarcar consulta). Não traduzir, nunca. -->
+    <meta name="google" content="notranslate" />
+    <!-- TODO: Set the document title to the name of your application -->
+    <title>Breno Xavier</title>
+    <meta name="description" content="Breno Xavier - Funnel & CRM">
+    <meta name="author" content="Breno Xavier" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Conexão (DNS + TLS) com o Supabase aberta enquanto o JS baixa: a primeira consulta do app
+         (login, lista de conversas) não paga o aperto de mão. crossorigin = mesmo modo do fetch da API. -->
+    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Time BX">
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Breno Xavier">
+    <meta property="og:description" content="Breno Xavier">
+    
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Breno Xavier">
+    <meta name="twitter:description" content="Breno Xavier">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+### Publica o site no GitHub Pages a cada push na main.
+#
+# Caminho de publicação independente do Lovable e do Cloudflare: roda dentro do
+# próprio repositório, então não depende de nenhum painel externo estar
+# funcionando. O site sai em
+# https://SEU_USUARIO.github.io/SEU_REPO/
+#
+# Como é um "project site", o Pages serve sob /funnel-friend-tool/ em vez da
+# raiz — daí o VITE_BASE_PATH no build e o basename no BrowserRouter.
+# O 404.html é cópia do index.html: o Pages devolve ele em qualquer caminho
+# desconhecido, o app carrega e o React Router resolve a rota (/feedback,
+# /feedback/mgmd, etc). É o truque padrão de SPA no Pages.
+
+name: Deploy GitHub Pages
+
+# Desligado do automatico: GitHub Pages nao esta habilitado neste repositorio,
+# entao toda execucao falhava em "configure-pages" -- 67 execucoes vermelhas
+# seguidas. CI sempre vermelho e CI que ninguem olha, e foi assim que falhas de
+# verdade passaram batido. Quem publica o site e a Cloudflare.
+# Para voltar ao automatico: habilite Pages em Settings > Pages e devolva o
+# gatilho de push abaixo.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez; se dois pushes vierem juntos, vence o mais recente.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      # enablement: liga o Pages via API na primeira execução, sem precisar
+      # mexer em Settings na mão.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          VITE_BASE_PATH: /funnel-friend-tool/
+        run: npm run build
+
+      - name: Fallback de SPA
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,3 @@
+ALTER TABLE public.consultations ADD COLUMN IF NOT EXISTS signal_residue_paid BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE public.alunas ADD COLUMN IF NOT EXISTS residuo_pago BOOLEAN DEFAULT FALSE;

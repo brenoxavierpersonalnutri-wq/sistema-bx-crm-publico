@@ -1,0 +1,138 @@
+/* Desafio Magra e Definida: identidade da página original
+   (desafio.brenoxavier.com.br), escopada em .dmd para não vazar no CRM. */
+.dmd {
+  --dmd-bg: 270 50% 10%;
+  --dmd-card: 270 50% 14%;
+  --dmd-fg: 0 0% 100%;
+  --dmd-muted: 270 10% 70%;
+  --dmd-border: 270 30% 25%;
+  --dmd-secondary: 270 40% 20%;
+  --dmd-gold: 45 100% 50%;
+  --dmd-gold-dark: 40 100% 40%;
+  --dmd-purple-light: 270 40% 25%;
+  --dmd-purple-dark: 270 60% 8%;
+  --dmd-green: 142 70% 45%;
+  --dmd-red: 0 84% 60%;
+  min-height: 100vh;
+  background: hsl(var(--dmd-bg));
+  color: hsl(var(--dmd-fg));
+  font-family: "Inter", "DM Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.dmd h1, .dmd h2, .dmd h3, .dmd h4 { font-family: inherit; }
+
+.dmd-dark { background: hsl(var(--dmd-purple-dark)); }
+.dmd-medium { background: hsl(var(--dmd-bg)); }
+.dmd-light { background: hsl(var(--dmd-purple-light)); }
+
+.dmd-gold { color: hsl(var(--dmd-gold)); }
+.dmd-muted { color: hsl(var(--dmd-muted)); }
+.dmd-strong { color: hsl(var(--dmd-fg)); font-weight: 700; }
+.dmd-red { color: hsl(var(--dmd-red)); }
+.dmd-green { color: hsl(var(--dmd-green)); }
+.dmd-strike { text-decoration: line-through; color: hsl(var(--dmd-muted)); }
+
+.dmd-cta {
+  display: inline-block;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: linear-gradient(135deg, hsl(var(--dmd-gold)), hsl(var(--dmd-gold-dark)));
+  color: hsl(var(--dmd-bg));
+  box-shadow: 0 4px 25px hsl(var(--dmd-gold) / 0.4);
+}
+.dmd-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 35px hsl(var(--dmd-gold) / 0.6); }
+.dmd-cta:focus-visible { outline: 3px solid hsl(var(--dmd-fg)); outline-offset: 3px; }
+
+.dmd-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: hsl(var(--dmd-gold) / 0.15);
+  color: hsl(var(--dmd-gold));
+  border: 1px solid hsl(var(--dmd-gold) / 0.3);
+}
+
+.dmd-price {
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: hsl(var(--dmd-secondary));
+  border: 1px solid hsl(var(--dmd-border));
+}
+
+.dmd-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: hsl(var(--dmd-card));
+  border: 1px solid hsl(var(--dmd-border));
+}
+
+.dmd-step {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, hsl(var(--dmd-gold)), hsl(var(--dmd-gold-dark)));
+  color: hsl(var(--dmd-bg));
+}
+
+.dmd-guarantee {
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  background: hsl(var(--dmd-card));
+  border: 2px solid hsl(var(--dmd-gold) / 0.3);
+}
+
+.dmd-img { border-radius: 0.75rem; background: hsl(var(--dmd-card)); }
+.dmd-hero-img-1 { object-position: center 65%; }
+
+.dmd-whats {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 50;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #25d366;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.35);
+}
+
+/* Teste de dobra (v7..v9): head + botão dentro de 390x844. */
+.dmd-h1-dobra { font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; }
+@media (min-width: 768px) { .dmd-h1-dobra { font-size: 3rem; } }
+.dmd-cta-dobra { display: block; padding: 1rem 1.25rem; font-size: 1.0625rem; }
+.dmd-foto-dobra { height: 15rem; object-position: center 40%; }
+.dmd-rotulo-foto {
+  position: absolute;
+  bottom: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: hsl(var(--dmd-purple-dark) / 0.85);
+  color: hsl(var(--dmd-fg));
+}

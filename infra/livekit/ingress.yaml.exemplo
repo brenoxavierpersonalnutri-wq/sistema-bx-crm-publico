@@ -1,0 +1,20 @@
+# Copiar para /etc/headturbo-livekit/ingress.yaml (root, 0600). Mesmas chaves do egress.yaml.
+# Só URL_INPUT (vídeo da aula): RTMP e WHIP desligados (-1), relay interno em localhost:9090,
+# sem health/prometheus. Nenhuma porta nova para fora.
+api_key: TROCAR_PELA_API_KEY
+api_secret: TROCAR_PELO_API_SECRET
+ws_url: ws://127.0.0.1:7880
+redis:
+  address: 127.0.0.1:6380
+rtmp_port: -1
+whip_port: -1
+http_relay_port: 9090
+logging:
+  level: info
+cpu_cost:
+  # 4 vCPU: o Egress (RoomComposite) pede 2,5. Um vídeo 720p transcodificado cabe em ~1.
+  url_cpu_cost: 1
+  rtmp_cpu_cost: 1
+  whip_cpu_cost: 1
+  whip_bypass_transcoding_cpu_cost: 0.1
+  min_idle_ratio: 0.05

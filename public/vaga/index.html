@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<meta name="theme-color" content="#212121" />
+<meta name="description" content="Formulário de candidatura para o time de vendas home office — Breno Xavier." />
+<title>Vaga Time de Vendas — Breno Xavier</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@300;400;500;600;700&display=swap');
+
+  :root{
+    --background: 0 0% 13%;
+    --foreground: 38 47% 94%;
+    --card: 0 0% 17%;
+    --secondary: 0 0% 20%;
+    --muted-foreground: 38 15% 72%;
+    --accent: 8 95% 58%;
+    --accent-ink: 20 60% 8%;
+    --border: 0 0% 24%;
+    --destructive: 0 75% 50%;
+    --font-display: 'Archivo Black', system-ui, sans-serif;
+    --font-body: 'Hind', system-ui, -apple-system, sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:hsl(var(--background));
+    color:hsl(var(--foreground));
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  .glow{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(120px);}
+  .glow-1{top:-18%;left:50%;transform:translateX(-50%);width:75vw;height:75vw;max-width:640px;max-height:640px;background:hsl(var(--accent) / 12%);}
+  .glow-2{bottom:-25%;right:-10%;width:60vw;height:60vw;max-width:520px;max-height:520px;background:hsl(var(--accent) / 8%);}
+  @media (prefers-reduced-motion: no-preference){
+    .glow-1{animation:drift1 9s ease-in-out infinite alternate;}
+    .glow-2{animation:drift2 11s ease-in-out infinite alternate;}
+  }
+  @keyframes drift1{from{opacity:.7;transform:translateX(-50%) scale(1);}to{opacity:1;transform:translateX(-50%) scale(1.08);}}
+  @keyframes drift2{from{opacity:.6;transform:scale(1);}to{opacity:.9;transform:scale(1.1);}}
+
+  .wrap{
+    position:relative;z-index:1;max-width:640px;margin:0 auto;
+    min-height:100vh;box-sizing:border-box;
+    padding:clamp(28px,6vh,56px) 22px 32px;
+    display:flex;flex-direction:column;
+  }
+
+  .top-bar{display:none;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;}
+  .top-bar.visible{display:flex;}
+  .back-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:50%;
+    background:hsl(var(--card));border:1.5px solid hsl(var(--border));
+    color:hsl(var(--foreground));cursor:pointer;flex-shrink:0;
+    transition:border-color .15s,background-color .15s;
+  }
+  .back-btn:hover{border-color:hsl(var(--accent) / 60%);}
+  .back-btn:focus-visible{outline:2px solid hsl(var(--accent));outline-offset:2px;}
+  .step-label{
+    font-family:var(--font-body);font-weight:700;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:hsl(var(--muted-foreground));
+    font-variant-numeric:tabular-nums;
+  }
+
+  .progress-wrap{display:none;margin-bottom:36px;}
+  .progress-wrap.visible{display:block;}
+  .progress-track{width:100%;height:5px;background:hsl(var(--border));border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:hsl(var(--accent));border-radius:999px;transition:width .35s ease;}
+
+  #card{flex:1;display:flex;flex-direction:column;justify-content:flex-start;}
+
+  .anim{opacity:0;transform:translateX(18px);}
+  @media (prefers-reduced-motion: no-preference){
+    .anim{animation:stepIn .4s cubic-bezier(.2,.7,.3,1) forwards;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .anim{opacity:1;transform:none;}
+  }
+  @keyframes stepIn{to{opacity:1;transform:translateX(0);}}
+
+  .kicker{
+    display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;color:hsl(var(--accent));margin-bottom:18px;
+  }
+  .intro-title{
+    font-family:var(--font-display);font-size:clamp(2.4rem,9vw,3.6rem);line-height:.98;
+    text-transform:uppercase;letter-spacing:-.01em;margin:0 0 20px;text-wrap:balance;
+  }
+  .intro-sub{font-size:1.05rem;line-height:1.55;color:hsl(var(--muted-foreground));max-width:46ch;margin:0 0 32px;}
+  .intro-hint{font-size:12.5px;color:hsl(var(--muted-foreground) / 75%);margin:14px 0 0;text-align:center;}
+
+  .q-title{
+    font-family:var(--font-display);font-size:clamp(1.5rem,5.2vw,2.15rem);line-height:1.12;
+    text-transform:uppercase;letter-spacing:-.005em;margin:0 0 12px;text-wrap:balance;
+  }
+  .q-subtitle{font-size:.98rem;line-height:1.5;color:hsl(var(--muted-foreground));margin:0 0 26px;max-width:50ch;}
+
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:8px;}
+  .option{
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:16px 18px;background:hsl(var(--card));
+    border:1.5px solid hsl(var(--border));border-radius:1.1rem;
+    color:hsl(var(--foreground));font-family:var(--font-body);
+    font-size:1rem;font-weight:600;text-align:left;cursor:pointer;
+    transition:border-color .15s,background-color .15s,transform .1s;
+  }
+  .option:hover{border-color:hsl(var(--accent) / 55%);}
+  .option:focus-visible{outline:2px solid hsl(var(--accent));outline-offset:2px;}
+  .option:active{transform:scale(.99);}
+  .option.selected{border-color:hsl(var(--accent));background:hsl(var(--accent) / 13%);}
+  .option-dot{
+    width:19px;height:19px;border-radius:50%;border:2px solid hsl(var(--border));
+    flex-shrink:0;position:relative;transition:border-color .15s;
+  }
+  .option.selected .option-dot{border-color:hsl(var(--accent));}
+  .option.selected .option-dot::after{
+    content:'';position:absolute;inset:3px;border-radius:50%;background:hsl(var(--accent));
+  }
+
+  .field-wrap{position:relative;margin-bottom:8px;}
+  .field-prefix{
+    position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    color:hsl(var(--muted-foreground));font-weight:600;font-size:1.05rem;pointer-events:none;
+  }
+  .field-input{
+    width:100%;background:hsl(var(--secondary) / 55%);
+    border:1.5px solid hsl(var(--border));border-radius:1.1rem;
+    padding:1.05rem 1.2rem;font-family:var(--font-body);font-size:1.08rem;
+    color:hsl(var(--foreground));outline:none;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .field-input.has-prefix{padding-left:2.5rem;}
+  .field-input:focus{border-color:hsl(var(--accent));box-shadow:0 0 0 3px hsl(var(--accent) / 18%);}
+  .field-input::placeholder{color:hsl(var(--muted-foreground) / 70%);}
+  textarea.field-input{resize:vertical;min-height:96px;font-family:var(--font-body);line-height:1.5;}
+
+  .follow{margin-top:18px;padding-top:18px;border-top:1px dashed hsl(var(--border));}
+  .follow-label{display:block;font-size:.85rem;font-weight:600;color:hsl(var(--muted-foreground));margin-bottom:10px;}
+
+  .cta{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:100%;padding:1.15rem 1.5rem;border-radius:1.35rem;border:none;
+    background:hsl(var(--accent));color:hsl(var(--accent-ink));
+    font-family:var(--font-display);font-size:1.02rem;letter-spacing:.03em;
+    text-transform:uppercase;text-decoration:none;cursor:pointer;
+    box-shadow:0 10px 30px hsl(var(--accent) / 32%),0 2px 8px rgba(0,0,0,.25);
+    transition:transform .15s,filter .15s,box-shadow .15s;
+    margin-top:auto;
+  }
+  .cta:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.06);}
+  .cta:active:not(:disabled){transform:scale(.98);}
+  .cta:disabled{opacity:.32;cursor:not-allowed;box-shadow:none;transform:none;}
+  .cta:focus-visible{outline:2px solid hsl(var(--foreground));outline-offset:3px;}
+
+  .q-block{display:flex;flex-direction:column;flex:1;}
+  .q-block .cta{margin-top:28px;}
+
+  .success{display:flex;flex-direction:column;align-items:flex-start;flex:1;}
+  .success-badge{
+    width:52px;height:52px;border-radius:50%;background:hsl(var(--accent) / 15%);
+    border:1.5px solid hsl(var(--accent) / 40%);color:hsl(var(--accent));
+    display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:22px;
+  }
+  .success-badge.error{
+    background:hsl(var(--destructive) / 15%);border-color:hsl(var(--destructive) / 40%);
+    color:hsl(var(--destructive));
+  }
+  .spinner{
+    width:42px;height:42px;border-radius:50%;
+    border:3px solid hsl(var(--border));border-top-color:hsl(var(--accent));
+    margin-bottom:22px;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .spinner{animation:spin .8s linear infinite;}
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .foot{
+    margin-top:40px;padding-top:24px;text-align:center;
+    font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:hsl(var(--muted-foreground) / 65%);
+  }
+
+  @media (min-width:640px){
+    .options{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <main class="wrap">
+    <div class="top-bar" id="top-bar">
+      <button class="back-btn" id="back-btn" type="button" aria-label="Voltar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <span class="step-label" id="step-label"></span>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div id="card"></div>
+
+    <footer class="foot">@brenoxavieer_ · 31 9 7000-0106 · brenoxavier.com.br</footer>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  var SUPABASE_URL = "https://SEU_PROJECT_REF_4.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IlNFVV9QUk9KRUNUX1JFRl80Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzQyMDYsImV4cCI6MjEwMjg1MDIwNn0.ASSINATURA_FICTICIA_troque_pela_sua_anon_key";
+  var submitState = "idle";
+
+  var STEPS = [
+    {key:"nome", title:"Qual seu nome completo?", type:"text", placeholder:"Nome e sobrenome", required:true},
+    {key:"whatsapp", title:"Qual seu WhatsApp?", subtitle:"Com DDD — é por aqui que o time te chama.", type:"tel", placeholder:"(31) 9 9999-9999", required:true},
+    {key:"idade", title:"Quantos anos você tem?", type:"number", placeholder:"Ex: 27", required:true},
+    {key:"instagram", title:"Qual seu Instagram?", subtitle:"Só o @, sem link.", type:"text", prefix:"@", placeholder:"seu.usuario", required:true},
+    {key:"formacao", title:"Qual sua formação?", subtitle:"Curso superior, técnico, em andamento — o que fizer sentido.", type:"text", placeholder:"Ex: Administração, cursando", required:true},
+    {key:"comercial_antes", title:"Você já trabalhou com comercial antes?", type:"choice", options:["Sim","Não"], required:true},
+    {key:"comunicativa", title:"Você se considera uma pessoa comunicativa?", subtitle:"Curte ligar, puxar conversa, abordar gente nova?", type:"choice", options:["Muito","Sim","Mais ou menos","Não"], required:true},
+    {key:"vendas_antes", title:"Já trabalhou antes com vendas?", type:"choice", options:["Sim","Não"], required:true,
+      follow:{key:"vendas_como", showIf:"Sim", label:"Como foi? Conta rápido o que você vendia e como.", type:"textarea"}},
+    {key:"ultimo_trabalho", title:"Qual foi o seu último trabalho?", subtitle:"Empresa e função.", type:"text", placeholder:"Ex: Loja X, vendedora", required:true},
+    {key:"trabalha_paralelo", title:"Hoje você trabalha com algo em paralelo?", type:"choice", options:["Sim","Não"], required:true,
+      follow:{key:"paralelo_oque", showIf:"Sim", label:"O quê?", type:"text"}},
+    {key:"pretensao_salarial", title:"Qual sua pretensão salarial?", type:"text", prefix:"R$", placeholder:"", required:true},
+    {key:"disponibilidade", title:"Qual sua disponibilidade de horário pra trabalhar?", type:"choice",
+      options:["Período integral (comercial)","Só de manhã","Só à tarde","Integral, incluindo sábados","Outra"], required:true,
+      follow:{key:"disponibilidade_outra", showIf:"Outra", label:"Descreve pra gente.", type:"text"}},
+    {key:"porque_chamar", title:"Por que a gente deveria te chamar?", subtitle:"Escreva com suas palavras — sem IA, por favor.", type:"textarea", placeholder:"", required:true}
+  ];
+
+  var INPUT_ATTRS = {
+    tel:{inputmode:"tel", autocomplete:"tel"},
+    number:{inputmode:"numeric", min:"14", max:"90"},
+    text:{}
+  };
+
+  var stepIndex = -1;
+  var answers = {};
+
+  var card = document.getElementById("card");
+  var topBar = document.getElementById("top-bar");
+  var progressWrap = document.getElementById("progress-wrap");
+  var stepLabel = document.getElementById("step-label");
+  var progressFill = document.getElementById("progress-fill");
+
+  document.getElementById("back-btn").addEventListener("click", function(){
+    if(stepIndex >= 0){ stepIndex--; render(); }
+  });
+
+  function escapeHtml(str){
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function attrsToStr(attrs){
+    var out = [];
+    for(var k in attrs){ out.push(k + '="' + attrs[k] + '"'); }
+    return out.join(" ");
+  }
+
+  function formatPhone(v){
+    var d = v.replace(/\D/g,"").slice(0,11);
+    if(d.length<=2) return d;
+    if(d.length<=3) return "(" + d.slice(0,2) + ") " + d.slice(2);
+    if(d.length<=7) return "(" + d.slice(0,2) + ") " + d.slice(2,3) + " " + d.slice(3);
+    return "(" + d.slice(0,2) + ") " + d.slice(2,3) + " " + d.slice(3,7) + "-" + d.slice(7);
+  }
+
+  function isStepValid(step){
+    if(!step) return true;
+    var val = answers[step.key];
+    if(step.required && (!val || !String(val).trim())) return false;
+    if(step.follow && answers[step.key] === step.follow.showIf){
+      var fval = answers[step.follow.key];
+      if(!fval || !String(fval).trim()) return false;
+    }
+    return true;
+  }
+
+  function render(){
+    if(stepIndex === -1){ renderIntro(); return; }
+    if(stepIndex === STEPS.length){ renderResult(); return; }
+    renderQuestion();
+  }
+
+  function renderIntro(){
+    topBar.className = "top-bar";
+    progressWrap.className = "progress-wrap";
+    card.innerHTML =
+      '<div class="anim">' +
+        '<span class="kicker">VAGA ABERTA &middot; HOME OFFICE</span>' +
+        '<h1 class="intro-title">TIME DE<br>VENDAS</h1>' +
+        '<p class="intro-sub">A gente procura gente que gosta de gente &mdash; que curte ligar, puxar conversa e fechar. Se é você, bora pras perguntas.</p>' +
+        '<button class="cta" id="start-btn" type="button">Começar</button>' +
+        '<p class="intro-hint">Leva menos de 3 minutos.</p>' +
+      '</div>';
+    document.getElementById("start-btn").addEventListener("click", function(){
+      stepIndex = 0; render();
+    });
+  }
+
+  function renderQuestion(){
+    var step = STEPS[stepIndex];
+    topBar.className = "top-bar visible";
+    progressWrap.className = "progress-wrap visible";
+    stepLabel.textContent = "PERGUNTA " + (stepIndex+1) + " DE " + STEPS.length;
+    progressFill.style.width = ((stepIndex+1)/STEPS.length*100) + "%";
+
+    var fieldHtml = "";
+    if(step.type === "choice"){
+      fieldHtml = '<div class="options">' + step.options.map(function(opt){
+        var sel = answers[step.key] === opt ? " selected" : "";
+        return '<button type="button" class="option' + sel + '" data-value="' + escapeHtml(opt) + '">' +
+                 '<span class="option-dot"></span><span class="option-label">' + escapeHtml(opt) + '</span>' +
+               '</button>';
+      }).join("") + '</div>';
+    } else if(step.type === "textarea"){
+      fieldHtml = '<textarea class="field-input" id="input-' + step.key + '" placeholder="' + (step.placeholder||'') + '" rows="4">' + escapeHtml(answers[step.key]) + '</textarea>';
+    } else {
+      var attrs = attrsToStr(INPUT_ATTRS[step.type] || {});
+      var inputType = step.type === "tel" ? "tel" : step.type;
+      fieldHtml = '<div class="field-wrap">' +
+        (step.prefix ? '<span class="field-prefix">' + step.prefix + '</span>' : '') +
+        '<input class="field-input' + (step.prefix ? ' has-prefix' : '') + '" id="input-' + step.key + '" type="' + inputType + '" placeholder="' + (step.placeholder||'') + '" value="' + escapeHtml(answers[step.key]) + '" ' + attrs + ' />' +
+      '</div>';
+    }
+
+    var followHtml = "";
+    if(step.follow && answers[step.key] === step.follow.showIf){
+      var f = step.follow;
+      if(f.type === "textarea"){
+        followHtml = '<div class="follow"><label class="follow-label" for="input-' + f.key + '">' + f.label + '</label>' +
+          '<textarea class="field-input" id="input-' + f.key + '" rows="3">' + escapeHtml(answers[f.key]) + '</textarea></div>';
+      } else {
+        followHtml = '<div class="follow"><label class="follow-label" for="input-' + f.key + '">' + f.label + '</label>' +
+          '<input class="field-input" id="input-' + f.key + '" type="text" value="' + escapeHtml(answers[f.key]) + '" /></div>';
+      }
+    }
+
+    var isLast = stepIndex === STEPS.length - 1;
+    card.innerHTML =
+      '<div class="q-block anim">' +
+        '<h2 class="q-title">' + step.title + '</h2>' +
+        (step.subtitle ? '<p class="q-subtitle">' + step.subtitle + '</p>' : '') +
+        fieldHtml + followHtml +
+        '<button class="cta" id="next-btn" type="button"' + (isStepValid(step) ? '' : ' disabled') + '>' +
+          (isLast ? 'Enviar candidatura' : 'Continuar') +
+        '</button>' +
+      '</div>';
+
+    attachStepListeners(step);
+  }
+
+  function attachStepListeners(step){
+    var opts = card.querySelectorAll(".option");
+    for(var i=0;i<opts.length;i++){
+      opts[i].addEventListener("click", function(){
+        answers[step.key] = this.getAttribute("data-value");
+        var needsFollow = step.follow && answers[step.key] === step.follow.showIf;
+        if(step.follow && !needsFollow){ delete answers[step.follow.key]; }
+        render();
+        if(!needsFollow){ setTimeout(goNext, 220); }
+      });
+    }
+
+    var mainInput = document.getElementById("input-" + step.key);
+    if(mainInput){
+      mainInput.addEventListener("input", function(){
+        var val = this.value;
+        if(step.type === "tel"){ val = formatPhone(val); this.value = val; }
+        answers[step.key] = val;
+        refreshNextButton(step);
+      });
+      mainInput.addEventListener("keydown", function(e){
+        if(e.key === "Enter" && step.type !== "textarea"){ e.preventDefault(); goNext(); }
+      });
+      setTimeout(function(){ mainInput.focus(); }, 60);
+    }
+
+    if(step.follow){
+      var followInput = document.getElementById("input-" + step.follow.key);
+      if(followInput){
+        followInput.addEventListener("input", function(){
+          answers[step.follow.key] = this.value;
+          refreshNextButton(step);
+        });
+        followInput.addEventListener("keydown", function(e){
+          if(e.key === "Enter" && step.follow.type !== "textarea"){ e.preventDefault(); goNext(); }
+        });
+        if(!mainInput){ setTimeout(function(){ followInput.focus(); }, 60); }
+      }
+    }
+
+    document.getElementById("next-btn").addEventListener("click", goNext);
+  }
+
+  function refreshNextButton(step){
+    var btn = document.getElementById("next-btn");
+    if(btn) btn.disabled = !isStepValid(step);
+  }
+
+  function goNext(){
+    var step = STEPS[stepIndex];
+    if(step && !isStepValid(step)) return;
+    stepIndex++;
+    if(stepIndex === STEPS.length){
+      submitAnswers();
+    } else {
+      render();
+      window.scrollTo(0,0);
+    }
+  }
+
+  function submitAnswers(){
+    submitState = "loading";
+    render();
+    saveToSupabase(answers).then(function(){
+      submitState = "success";
+      render();
+    }).catch(function(){
+      submitState = "error";
+      render();
+    });
+  }
+
+  function saveToSupabase(data){
+    return fetch(SUPABASE_URL + "/rest/v1/candidaturas_vendas", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SUPABASE_ANON_KEY,
+        "Authorization":"Bearer " + SUPABASE_ANON_KEY,
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({
+        nome:data.nome, whatsapp:data.whatsapp, idade:data.idade?Number(data.idade):null,
+        instagram:data.instagram, formacao:data.formacao,
+        comercial_antes:data.comercial_antes, comunicativa:data.comunicativa,
+        vendas_antes:data.vendas_antes, vendas_como:data.vendas_como||null,
+        ultimo_trabalho:data.ultimo_trabalho,
+        trabalha_paralelo:data.trabalha_paralelo, paralelo_oque:data.paralelo_oque||null,
+        pretensao_salarial:data.pretensao_salarial,
+        disponibilidade:data.disponibilidade, disponibilidade_outra:data.disponibilidade_outra||null,
+        porque_chamar:data.porque_chamar
+      })
+    }).then(function(res){
+      if(!res.ok){ throw new Error("HTTP " + res.status); }
+    });
+  }
+
+  function renderResult(){
+    topBar.className = "top-bar";
+    progressWrap.className = "progress-wrap";
+
+    if(submitState === "loading"){
+      card.innerHTML =
+        '<div class="success anim">' +
+          '<div class="spinner"></div>' +
+          '<h2 class="q-title">ENVIANDO...</h2>' +
+          '<p class="q-subtitle">Só um segundo.</p>' +
+        '</div>';
+      return;
+    }
+
+    if(submitState === "error"){
+      card.innerHTML =
+        '<div class="success anim">' +
+          '<div class="success-badge error">!</div>' +
+          '<h2 class="q-title">NÃO DEU PRA ENVIAR</h2>' +
+          '<p class="q-subtitle">Confere sua internet e tenta de novo.</p>' +
+          '<button class="cta" id="retry-btn" type="button">Tentar novamente</button>' +
+        '</div>';
+      document.getElementById("retry-btn").addEventListener("click", submitAnswers);
+      return;
+    }
+
+    card.innerHTML =
+      '<div class="success anim">' +
+        '<div class="success-badge">&#10003;</div>' +
+        '<h2 class="q-title">CANDIDATURA ENVIADA</h2>' +
+        '<p class="q-subtitle">Recebemos suas respostas. Se o seu perfil combinar com o que a gente precisa, o time te chama no WhatsApp em breve.</p>' +
+      '</div>';
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1056 @@
+/* Tela de substituições. Escura por definição, igual ao app da aluna, e com o
+   escopo todo em .sub-pagina pra não vazar estilo pro resto do sistema. */
+
+.sub-pagina {
+  --sub-fora: #05070d;
+  --sub-fundo: #080c16;
+  --sub-carta: rgba(16, 20, 31, 0.93);
+  --sub-carta2: rgba(22, 27, 40, 0.95);
+  --sub-linha: rgba(248, 250, 252, 0.09);
+  --sub-texto: #f8fafc;
+  --sub-apagado: #94a3b8;
+  --sub-dourado: #f59e0b;
+  --sub-verde: #34d399;
+  --sub-verm: #f87171;
+  --sub-sombra: 0 18px 50px -18px rgba(0, 0, 0, 0.85);
+
+  color-scheme: dark;
+  position: relative;
+  min-height: 100vh;
+  background: var(--sub-fora);
+  color: var(--sub-texto);
+  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* o rodapé: centralizado, com o símbolo do Instagram, e clicável */
+.sub-rodape {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 22px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  border-top: 1px solid var(--sub-linha);
+}
+.sub-rodape a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sub-dourado);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.sub-rodape a:hover {
+  text-decoration: underline;
+}
+.sub-rodape svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.sub-fundo {
+  position: absolute;
+  /* começa onde o cabeçalho termina, senão ele come a cabeça da foto */
+  top: var(--sub-topo-altura, 0px);
+  left: 0;
+  right: 0;
+  height: calc(min(100vw, 720px) + 140px);
+  z-index: 0;
+  background-image: var(--sub-foto);
+  /* Largura inteira, altura livre: assim os dois rostos ficam sempre inteiros,
+     em qualquer tela. O degradê cobre o que sobrar embaixo. */
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-color: var(--sub-fora);
+  pointer-events: none;
+}
+
+.sub-fundo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 7, 13, 0.34) 0%,
+    rgba(5, 7, 13, 0.5) 38%,
+    rgba(5, 7, 13, 0.88) 74%,
+    var(--sub-fora) 100%
+  );
+}
+
+.sub-pagina *,
+.sub-pagina *::before,
+.sub-pagina *::after {
+  box-sizing: border-box;
+}
+
+.sub-pagina h1,
+.sub-pagina h2,
+.sub-pagina h3 {
+  font-family: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+}
+
+.sub-pagina button,
+.sub-pagina input {
+  font: inherit;
+  color: inherit;
+}
+
+.sub-pagina button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.sub-pagina :focus-visible {
+  outline: 2px solid var(--sub-dourado);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.sub-app {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ---------- topo ---------- */
+.sub-topo {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: rgba(8, 12, 22, 0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--sub-linha);
+  padding-block: 14px;
+  padding-inline: 16px;
+}
+
+.sub-marca {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sub-marca h1 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+.sub-marca span {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sub-dourado);
+}
+
+.sub-busca-wrap {
+  position: relative;
+  margin-top: 12px;
+}
+.sub-trocar-por .sub-busca-wrap {
+  margin-top: 0;
+}
+
+.sub-busca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.sub-busca.menor {
+  padding: 8px 12px;
+}
+.sub-busca input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 15px;
+}
+.sub-busca input::placeholder {
+  color: var(--sub-apagado);
+}
+.sub-lupa {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--sub-apagado);
+}
+.sub-limpar {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--sub-apagado);
+  display: grid;
+  place-items: center;
+}
+.sub-limpar:hover {
+  color: var(--sub-texto);
+  background: var(--sub-carta2);
+}
+
+/* ---------- sugestões ---------- */
+.sub-sugestoes {
+  backdrop-filter: blur(8px);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 60;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-radius: 12px;
+  box-shadow: var(--sub-sombra);
+  max-height: min(52vh, 340px);
+  overflow-y: auto;
+}
+.sub-sug {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.sub-sug:hover,
+.sub-sug.ativa {
+  background: rgba(245, 158, 11, 0.13);
+}
+.sub-sug-nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sub-sug-meta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sub-sug-grupo {
+  font-size: 11px;
+  color: var(--sub-apagado);
+}
+/* com o selo da carne, os três emblemas espremiam o nome: no celular eles
+   descem pra linha de baixo e o alimento fica inteiro */
+@media (max-width: 560px) {
+  .sub-sug {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .sub-sug-nome {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
+  .sub-sug-meta {
+    flex-wrap: wrap;
+  }
+}
+
+.sub-sug-vazio {
+  padding: 12px 10px;
+  font-size: 13px;
+  color: var(--sub-apagado);
+}
+
+/* o selo de magreza da carne, pela gordura por 100g */
+.sub-selo-magra {
+  display: inline-block;
+  font-size: 9.5px;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+  color: var(--sub-verde);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+.sub-selo-magra.extrema {
+  color: #6ee7b7;
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.5);
+}
+.sub-calc-nome .sub-selo-magra {
+  margin-top: 4px;
+}
+
+.sub-selo-fonte {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 2px 8px;
+  border: 1px solid var(--sub-linha);
+  color: var(--sub-apagado);
+}
+.sub-selo-fonte.lista {
+  color: var(--sub-dourado);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+/* rótulo de fabricante */
+.sub-selo-fonte.marca {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.1);
+}
+/* prato montado dos ingredientes da TACO: a aluna vê que é conta, não rótulo */
+.sub-selo-fonte.estimativa {
+  color: #a5b4fc;
+  border-color: rgba(129, 140, 248, 0.45);
+  background: rgba(129, 140, 248, 0.1);
+}
+
+/* ---------- corpo ---------- */
+.sub-corpo {
+  padding-inline: 16px;
+  /* o conteúdo desce junto com a faixa da foto, senão a chamada cai em cima
+     do rosto de quem está nela */
+  padding-block: calc(18px + var(--sub-topo-altura, 0px)) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.sub-rotulo {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sub-apagado);
+  margin: 0 0 8px;
+}
+
+.sub-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sub-chip {
+  border: 1px solid var(--sub-linha);
+  background: var(--sub-carta);
+  color: var(--sub-texto);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 13.5px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sub-chip:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+/* ---------- abertura ---------- */
+.sub-abertura {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.sub-chamada {
+  /* Começa onde a foto termina, tirando uma sobra pra frase encostar nela. */
+  padding: calc(min(100vw, 720px) - 150px) 4px 8px;
+}
+.sub-chamada p {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(30px, 9vw, 50px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9);
+}
+.sub-chamada p span {
+  color: var(--sub-dourado);
+}
+
+.sub-como {
+  backdrop-filter: blur(8px);
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-radius: 16px;
+  padding: 16px;
+}
+.sub-como h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.sub-como ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  counter-reset: passo;
+}
+.sub-como li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+.sub-como li::before {
+  counter-increment: passo;
+  content: counter(passo);
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--sub-dourado);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.sub-como b {
+  color: var(--sub-texto);
+}
+.sub-aviso {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed var(--sub-linha);
+  font-size: 13px;
+  color: var(--sub-apagado);
+}
+
+/* ---------- cartão do alimento ---------- */
+.sub-cartao {
+  position: relative;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--sub-sombra);
+}
+.sub-cartao-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sub-cartao h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.sub-medida {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--sub-apagado);
+}
+.sub-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+.sub-tag-grupo {
+  flex: none;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub-dourado);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px;
+  padding: 4px 9px;
+}
+.sub-aviso-fora {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.sub-quanto {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.sub-quanto label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub-apagado);
+}
+.sub-campo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sub-carta2);
+  border: 1px solid var(--sub-linha);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+.sub-campo input {
+  width: 72px;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.sub-campo b {
+  font-size: 13px;
+  color: var(--sub-apagado);
+  font-weight: 500;
+}
+
+.sub-medidas {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--sub-carta2);
+  border: 1px solid var(--sub-linha);
+  border-radius: 9px;
+}
+.sub-medida-btn {
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  color: var(--sub-apagado);
+}
+.sub-medida-btn[aria-pressed="true"] {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--sub-dourado);
+  font-weight: 600;
+}
+
+.sub-atalhos {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sub-atalho {
+  border: 1px solid var(--sub-linha);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 12.5px;
+  color: var(--sub-apagado);
+  font-variant-numeric: tabular-nums;
+}
+.sub-atalho:hover {
+  color: var(--sub-texto);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.sub-atalho[aria-pressed="true"] {
+  color: var(--sub-dourado);
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.sub-macros {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--sub-linha);
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--sub-apagado);
+  font-variant-numeric: tabular-nums;
+}
+.sub-macros b {
+  color: var(--sub-texto);
+  font-weight: 600;
+}
+.sub-macros .principal b {
+  color: var(--sub-dourado);
+}
+
+.sub-trocar-por {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--sub-linha);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sub-trocar-por label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub-apagado);
+}
+
+/* ---------- trocas ---------- */
+.sub-resultado {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sub-titulo-secao {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.sub-titulo-secao h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.sub-titulo-secao em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--sub-apagado);
+}
+
+.sub-troca {
+  backdrop-filter: blur(8px);
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-left: 3px solid var(--sub-verde);
+  border-radius: 12px;
+  padding: 13px 14px;
+}
+.sub-troca p {
+  margin: 0;
+}
+.sub-linha-dieta {
+  font-size: 14.5px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.sub-linha-dieta b {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 16px;
+  color: var(--sub-verde);
+  font-variant-numeric: tabular-nums;
+}
+.sub-conta {
+  margin-top: 5px !important;
+  font-size: 12.5px;
+  color: var(--sub-apagado);
+  font-variant-numeric: tabular-nums;
+}
+.sub-conta .igual {
+  color: var(--sub-verde);
+}
+.sub-conta .difere {
+  color: var(--sub-dourado);
+}
+.sub-selo-lista {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sub-apagado);
+  border: 1px solid var(--sub-linha);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.sub-troca.longe {
+  border-left-color: var(--sub-dourado);
+}
+.sub-troca.longe .sub-linha-dieta b {
+  color: var(--sub-dourado);
+}
+.sub-troca.destaque {
+  border-left-width: 4px;
+  background: var(--sub-carta2);
+}
+
+.sub-opiniao {
+  margin-top: 9px !important;
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+.sub-selo-op {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--sub-verde);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.sub-texto-op {
+  display: block;
+  margin-top: 7px;
+}
+.sub-troca.longe .sub-selo-op {
+  color: var(--sub-dourado);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.sub-ver-mais {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--sub-dourado);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px 0;
+}
+
+.sub-vazio {
+  text-align: center;
+  color: var(--sub-apagado);
+  font-size: 14px;
+  padding: 28px 8px;
+}
+
+/* ---------- veto ---------- */
+.sub-veto {
+  backdrop-filter: blur(8px);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  border-radius: 16px;
+  padding: 16px;
+}
+.sub-veto h2 {
+  margin: 0;
+  font-size: 19px;
+  text-wrap: balance;
+}
+.sub-selo-veto {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub-verm);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin-bottom: 8px;
+}
+.sub-veto p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #fecaca;
+}
+.sub-troca-veto {
+  margin-top: 12px;
+  background: var(--sub-carta);
+  border: 1px solid var(--sub-linha);
+  border-left: 3px solid var(--sub-verde);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+}
+.sub-troca-veto span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub-apagado);
+  margin-bottom: 3px;
+}
+
+/* ---------- um alimento x refeição completa ---------- */
+.sub-modos {
+  display: flex;
+  gap: 2px;
+  margin-top: 12px;
+  padding: 3px;
+  background: var(--sub-carta2);
+  border: 1px solid var(--sub-linha);
+  border-radius: 11px;
+}
+.sub-modo {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--sub-apagado);
+}
+.sub-modo[aria-pressed="true"] {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--sub-dourado);
+  font-weight: 600;
+}
+
+/* ---------- o prato que ela monta ---------- */
+.sub-prato {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sub-linha-prato {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--sub-linha);
+  border-left: 3px solid var(--sub-linha);
+  border-radius: 10px;
+  background: var(--sub-carta2);
+}
+.sub-linha-prato.cheia {
+  border-left-color: var(--sub-dourado);
+}
+/* a linha com a lista aberta sobe, senão as de baixo passam por cima dela */
+.sub-linha-prato.aberta {
+  z-index: 20;
+}
+.sub-prato-num {
+  flex: none;
+  width: 18px;
+  font-size: 12px;
+  color: var(--sub-apagado);
+  font-variant-numeric: tabular-nums;
+}
+.sub-linha-busca {
+  flex: 1 1 190px;
+  min-width: 0;
+}
+/* a lista de sugestões abre na largura da linha inteira, não só do campo */
+.sub-linha-prato > .sub-sugestoes {
+  top: calc(100% - 4px);
+}
+.sub-linha-prato .sub-sug {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.sub-linha-prato .sub-sug-nome {
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+.sub-linha-busca .sub-busca {
+  padding: 6px 9px;
+  gap: 7px;
+  background: var(--sub-carta);
+}
+.sub-linha-busca .sub-busca input {
+  font-size: 14px;
+}
+/* a quantidade e o X andam juntos: ou cabem na linha do alimento, ou descem os dois */
+.sub-linha-fim {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sub-campo.pequeno {
+  flex: none;
+  padding: 4px 7px;
+  gap: 4px;
+}
+.sub-campo.pequeno input {
+  width: 46px;
+  font-size: 14px;
+}
+.sub-campo.pequeno input:disabled {
+  color: var(--sub-apagado);
+}
+/* cru, cozido, grelhado — o ponto que a TACO tem do alimento */
+.sub-preparo-sel {
+  flex: none;
+  max-width: 96px;
+  padding: 5px 6px;
+  border: 1px solid var(--sub-linha);
+  border-radius: 9px;
+  background: var(--sub-carta);
+  color: var(--sub-apagado);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.sub-preparo-sel:hover {
+  color: var(--sub-texto);
+  border-color: var(--sub-dourado);
+}
+.sub-preparo-sel option {
+  background: var(--sub-carta);
+  color: var(--sub-texto);
+}
+.sub-medida-sel {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 2px 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sub-dourado);
+  cursor: pointer;
+}
+.sub-medida-sel option {
+  background: var(--sub-carta);
+  color: var(--sub-tinta);
+}
+.sub-mais-linha {
+  margin-top: 10px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px dashed var(--sub-linha);
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--sub-apagado);
+}
+.sub-mais-linha:hover {
+  color: var(--sub-dourado);
+  border-color: var(--sub-dourado);
+}
+/* o botão que fecha o prato: é o que ela procura depois de preencher */
+.sub-botao-trocar {
+  margin-top: 14px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 18px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #0b0f19;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 12px 30px -12px rgba(245, 158, 11, 0.75);
+}
+.sub-botao-trocar:hover {
+  filter: brightness(1.06);
+}
+.sub-botao-trocar:active {
+  transform: translateY(1px);
+}
+
+.sub-botao-trocar:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* pelo que ela quer trocar, e a troca calculada */
+.sub-escolher,
+.sub-calculado {
+  margin-bottom: 14px;
+}
+/* o resultado é o que ela veio buscar: a tela desce até ele e ele se anuncia */
+.sub-calculado {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.18), 0 18px 50px -24px rgba(245, 158, 11, 0.5);
+  scroll-margin-top: 12px;
+}
+.sub-calculado h2 {
+  color: var(--sub-dourado);
+}
+.sub-calc-nome em b {
+  color: var(--sub-texto);
+  font-weight: 600;
+}
+.sub-aviso {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border-left: 2px solid var(--sub-dourado);
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 8px;
+}
+.sub-calc-nome {
+  flex: 1 1 150px;
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.sub-calc-nome em {
+  display: block;
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--sub-apagado);
+}
+.sub-calc-qtd {
+  min-width: 74px;
+  text-align: center;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.sub-linha-prato.travada {
+  border-left-color: var(--sub-verde);
+}
+.sub-passo {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--sub-linha);
+  background: var(--sub-carta);
+  color: var(--sub-dourado);
+  display: grid;
+  place-items: center;
+}
+.sub-passo:hover {
+  border-color: var(--sub-dourado);
+}
+.sub-passo:disabled {
+  opacity: 0.35;
+  color: var(--sub-apagado);
+}
+.sub-fecha {
+  margin-top: 10px;
+}
+.sub-voltar {
+  color: var(--sub-dourado);
+  text-decoration: underline;
+  font-size: inherit;
+}
+
+.sub-tirar {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--sub-apagado);
+  display: grid;
+  place-items: center;
+}
+.sub-tirar:hover {
+  color: var(--sub-verm);
+  background: rgba(248, 113, 113, 0.12);
+}
+.sub-seta {
+  color: var(--sub-apagado);
+}

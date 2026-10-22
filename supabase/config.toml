@@ -1,0 +1,116 @@
+project_id = "SEU_PROJECT_REF"
+
+[functions.funnel-track]
+verify_jwt = false
+[functions.webhook-receiver]
+enabled = true
+verify_jwt = false
+[functions.whatsapp-webhook]
+verify_jwt = false
+[functions.pagtrust-webhook]
+verify_jwt = false
+[functions.pagtrust-webhook-2]
+verify_jwt = false
+[functions.submit-form-response]
+verify_jwt = false
+[functions.gateway-criar-cobranca]
+verify_jwt = false
+[functions.gateway-webhook]
+verify_jwt = false
+
+# API do app nativo: valida o JWT da aluna dentro da própria função,
+# porque precisa devolver 401 com corpo JSON em vez do erro cru do gateway.
+[functions.mobile-v1]
+verify_jwt = false
+
+# Worker de push: chamado por cron, autentica por segredo no header.
+[functions.mobile-push]
+verify_jwt = false
+
+# Resumo por IA do feedback semanal: chamado pelo dashboard, exige login.
+[functions.feedback-semanal-resumo]
+verify_jwt = true
+
+# Webhook do OpenWA (VPS): autentica pela assinatura HMAC X-OpenWA-Signature.
+[functions.openwa-webhook]
+verify_jwt = false
+
+# Pareamento CRM <-> VPS: entrega os segredos uma vez, com janela + uso único + IP da VPS
+# (sem login: a VPS não tem usuário). Ver _shared/pareamentoWa.ts.
+[functions.wa-proxy-pareamento]
+verify_jwt = false
+# Pareamento inverso (VPS -> CRM) dos segredos do LiveKit: IP da VPS + uso único + HMAC com o
+# wa_proxy_secret (janela 5 min, nonce único). Ver _shared/pareamentoLive.ts.
+[functions.live-pareamento]
+verify_jwt = false
+
+# Automações/campanhas do CRM: pg_cron autentica por segredo (x-automacao-segredo);
+# a tela, por JWT conferido dentro da função (usuário aprovado).
+[functions.crm-automacoes]
+verify_jwt = false
+
+# Grupos do CRM (substitui o SendFlow): pg_cron autentica por segredo (x-grupos-segredo);
+# a tela, por JWT conferido dentro da função (usuário aprovado).
+[functions.grupos-disparo-tick]
+verify_jwt = false
+
+# Robô de atendimento por IA: pg_cron autentica por segredo (x-ai-robo-segredo).
+[functions.ai-robo-tick]
+verify_jwt = false
+
+# Lives (estúdio LiveKit) e webinário ao vivo. Cada função confere a própria credencial:
+# live-token (JWT do produtor, token de convite ou de render), live-control (JWT + módulo lives),
+# livekit-webhook (JWT assinado pelo LiveKit), cf-stream-webhook (assinatura/segredo do Cloudflare),
+# webinar-register/join/ping (públicas; join/ping exigem o token do link mágico),
+# webinar-reminders-tick (segredo do pg_cron).
+[functions.live-token]
+verify_jwt = false
+[functions.live-control]
+verify_jwt = false
+[functions.live-aula]
+verify_jwt = false
+[functions.livekit-webhook]
+verify_jwt = false
+[functions.cf-stream-webhook]
+verify_jwt = false
+[functions.webinar-register]
+verify_jwt = false
+[functions.webinar-join]
+verify_jwt = false
+[functions.webinar-ping]
+verify_jwt = false
+[functions.webinar-reminders-tick]
+verify_jwt = false
+# YouTube conectado: youtube-oauth confere o JWT (módulo lives) no POST; o GET é a volta do login do
+# Google (state de uso único). google-pareamento: IP da VPS + HMAC + nonce, como o live-pareamento.
+[functions.youtube-oauth]
+verify_jwt = false
+[functions.google-pareamento]
+verify_jwt = false
+# IA do CRM (Claude): a VPS entrega UMA vez a ANTHROPIC_API_KEY. IP da VPS + HMAC + nonce, como o google-pareamento.
+[functions.anthropic-pareamento]
+verify_jwt = false
+
+# whatsapp-backfill: o pg_cron chama com x-backfill-segredo (sem JWT); o front manda o Bearer e a função confere.
+[functions.whatsapp-backfill]
+verify_jwt = false
+
+# Instagram Direct (Instagram API with Instagram Login). Cada função confere a própria credencial:
+# instagram-webhook (verify_token no GET, X-Hub-Signature-256 com IG_APP_SECRET no POST),
+# instagram-oauth (volta do login pelo state de uso único; ações da tela por JWT de usuário aprovado;
+# callbacks de desautorização/exclusão por signed_request), instagram-send (JWT de usuário aprovado).
+[functions.instagram-webhook]
+verify_jwt = false
+[functions.instagram-oauth]
+verify_jwt = false
+[functions.instagram-send]
+verify_jwt = false
+
+# whatsapp-avatars-tick: o pg_cron chama com x-avatars-segredo (sem JWT); a função confere o segredo.
+[functions.whatsapp-avatars-tick]
+verify_jwt = false
+
+# fluxo-entrada: URL de entrada de leads de um fluxo (gatilho Webhook / API). Sistema de fora chama sem JWT;
+# a função confere o token do fluxo (crm_fluxo_entradas), assinatura HMAC opcional e o limite por minuto.
+[functions.fluxo-entrada]
+verify_jwt = false

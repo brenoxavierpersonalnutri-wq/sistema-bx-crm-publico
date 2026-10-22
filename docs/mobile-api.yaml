@@ -1,0 +1,565 @@
+openapi: 3.1.0
+info:
+  title: App da Aluna — API mobile
+  version: "1.0.0"
+  description: |
+    API do aplicativo nativo da consultoria Breno Xavier (iOS / Android).
+
+    Cada endpoint devolve o que uma tela inteira precisa, numa requisição só —
+    em rede móvel, encadear quatro chamadas vira segundos de tela branca.
+
+    A autenticação é feita pelo Supabase Auth (e-mail e senha). O `access_token`
+    da sessão vai no header `Authorization`. A Row Level Security do Postgres
+    continua sendo a camada que decide o que cada aluna alcança; esta API só
+    agrega e formata.
+
+servers:
+  - url: https://{projeto}.supabase.co/functions/v1/mobile-v1
+    variables:
+      projeto:
+        default: SEU_PROJECT_REF
+
+security:
+  - TokenAluna: []
+
+components:
+  securitySchemes:
+    TokenAluna:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: access_token devolvido por `supabase.auth.signInWithPassword`.
+
+  parameters:
+    AppVersao:
+      name: x-app-versao
+      in: header
+      required: true
+      schema: { type: string, example: "1.4.0" }
+      description: Versão instalada. Alimenta a porta de atualização obrigatória.
+    AppPlataforma:
+      name: x-app-plataforma
+      in: header
+      required: true
+      schema: { type: string, enum: [ios, android] }
+
+  schemas:
+    Erro:
+      type: object
+      properties:
+        erro:
+          type: object
+          properties:
+            codigo:
+              type: string
+              enum: [sem_token, token_invalido, sem_acesso, manutencao, rota_desconhecida, valor_invalido, dia_obrigatorio, token_obrigatorio, erro_interno]
+            mensagem:
+              type: string
+              description: Texto em pt-BR, pronto para mostrar à aluna.
+
+    Perfil:
+      type: object
+      properties:
+        aluna_id: { type: string, format: uuid }
+        nome: { type: string }
+        primeiro_nome: { type: string }
+        programa: { type: string }
+        vence_em: { type: string, format: date }
+
+    ConfigApp:
+      type: object
+      properties:
+        atualizacao_obrigatoria:
+          type: boolean
+          description: true = bloqueie a navegação e mande para a loja.
+        versao_minima: { type: string, nullable: true }
+        url_loja: { type: string, nullable: true }
+        manutencao: { type: boolean }
+        manutencao_mensagem: { type: string, nullable: true }
+        aviso:
+          nullable: true
+          type: object
+          properties:
+            titulo: { type: string }
+            corpo: { type: string }
+
+    Video:
+      type: object
+      properties:
+        youtube_id: { type: string, example: dQw4w9WgXcQ }
+        embed_url:
+          type: string
+          description: Pronto para WebView ou react-native-youtube-iframe.
+        thumbnail_url: { type: string }
+
+    ExercicioPrescrito:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ordem: { type: integer }
+        nome: { type: string }
+        equipamento: { type: string, nullable: true }
+        grupo_muscular: { type: string, nullable: true }
+        instrucoes: { type: string, nullable: true }
+        video: { $ref: '#/components/schemas/Video', nullable: true }
+        series: { type: integer, example: 4 }
+        repeticoes: { type: string, example: "10-12" }
+        carga_sugerida: { type: string, nullable: true }
+        cadencia:
+          type: string
+          nullable: true
+          example: "3-0-1-0"
+          description: Excêntrica, pausa embaixo, concêntrica, pausa em cima.
+        descanso_seg: { type: integer, nullable: true }
+        metodo_avancado:
+          type: string
+          nullable: true
+          example: drop-set
+        observacao: { type: string, nullable: true }
+        agrupamento:
+          type: string
+          nullable: true
+          example: "A"
+          description: Exercícios seguidos com a mesma letra formam bi-set/tri-set.
+
+    DiaDeTreino:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string, example: "Treino A" }
+        foco: { type: string, nullable: true }
+        observacao: { type: string, nullable: true }
+        feito_hoje: { type: boolean }
+        exercicios:
+          type: array
+          items: { $ref: '#/components/schemas/ExercicioPrescrito' }
+
+    Treino:
+      type: object
+      nullable: true
+      properties:
+        plano_fase_id: { type: string, format: uuid }
+        fase:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            nome: { type: string }
+            ordem: { type: integer }
+            objetivo: { type: string, nullable: true }
+            duracao_semanas: { type: integer }
+            liberada_em: { type: string, format: date }
+        total_fases_liberadas: { type: integer }
+        dias:
+          type: array
+          items: { $ref: '#/components/schemas/DiaDeTreino' }
+
+    Dieta:
+      type: object
+      nullable: true
+      properties:
+        id: { type: string, format: uuid }
+        titulo: { type: string }
+        tipo: { type: string, enum: [pdf, texto] }
+        conteudo: { type: string, nullable: true }
+        observacao: { type: string, nullable: true }
+        arquivo_url:
+          type: string
+          nullable: true
+          description: URL assinada, válida por 1 hora. Rebusque ao reabrir a tela.
+        arquivo_nome: { type: string, nullable: true }
+        arquivo_expira_em: { type: string, format: date-time, nullable: true }
+        vigencia_inicio: { type: string, format: date }
+        vigencia_fim: { type: string, format: date, nullable: true }
+
+    CicloFeedback:
+      type: object
+      nullable: true
+      properties:
+        periodicidade: { type: string, enum: [semanal, quinzenal, mensal] }
+        proxima_data: { type: string, format: date }
+        ativo: { type: boolean }
+
+    RespostaFeedback:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        data: { type: string, format: date }
+        peso: { type: number, nullable: true }
+        adesao_dieta: { type: integer, minimum: 0, maximum: 10, nullable: true }
+        adesao_treino: { type: integer, minimum: 0, maximum: 10, nullable: true }
+        energia: { type: integer, minimum: 0, maximum: 10, nullable: true }
+        sono: { type: integer, minimum: 0, maximum: 10, nullable: true }
+        intestino: { type: string, nullable: true }
+        dificuldades: { type: string, nullable: true }
+        observacao: { type: string, nullable: true }
+        resposta_time: { type: string, nullable: true }
+        respondido_em: { type: string, format: date-time, nullable: true }
+
+    Notificacao:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tipo: { type: string, enum: [fase_liberada, feedback_respondido, dieta_nova] }
+        titulo: { type: string }
+        corpo: { type: string }
+        dados:
+          type: object
+          description: '{ "rota": "treino" | "dieta" | "feedback" } — use para deep link.'
+        enviada_em: { type: string, format: date-time }
+        lida: { type: boolean }
+
+    Bootstrap:
+      type: object
+      properties:
+        perfil: { $ref: '#/components/schemas/Perfil' }
+        config: { $ref: '#/components/schemas/ConfigApp' }
+        treino: { $ref: '#/components/schemas/Treino' }
+        dieta: { $ref: '#/components/schemas/Dieta' }
+        feedback:
+          type: object
+          properties:
+            ciclo: { $ref: '#/components/schemas/CicloFeedback' }
+            ja_enviei_hoje: { type: boolean }
+        notificacoes_nao_lidas: { type: integer }
+        servidor_em: { type: string, format: date-time }
+
+  responses:
+    NaoAutenticado:
+      description: Sessão ausente ou expirada — mande para o login.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    SemAcesso:
+      description: E-mail não vinculado a uma consultoria ativa.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    Manutencao:
+      description: App em manutenção.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+
+paths:
+  /bootstrap:
+    get:
+      summary: Tudo que o app precisa para abrir
+      description: |
+        Perfil, config, fase de treino atual com a prescrição inteira, dieta
+        vigente, ciclo de feedback e contagem de notificações — numa chamada.
+        É o único endpoint que responde durante manutenção, para o app poder
+        mostrar a tela certa.
+      parameters:
+        - $ref: '#/components/parameters/AppVersao'
+        - $ref: '#/components/parameters/AppPlataforma'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Bootstrap' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemAcesso' }
+
+  /treino:
+    get:
+      summary: Fase de treino liberada no momento
+      description: |
+        Devolve só a fase corrente. As fases futuras não aparecem antes da data
+        de liberação — isso é garantido por RLS no banco, não pela aplicação.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  treino: { $ref: '#/components/schemas/Treino' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /dieta:
+    get:
+      summary: Plano alimentar vigente
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dieta: { $ref: '#/components/schemas/Dieta' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /feedback:
+    get:
+      summary: Ciclo e histórico de feedback
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ciclo: { $ref: '#/components/schemas/CicloFeedback' }
+                  ja_enviei_hoje: { type: boolean }
+                  respostas:
+                    type: array
+                    items: { $ref: '#/components/schemas/RespostaFeedback' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+    post:
+      summary: Enviar feedback do período
+      description: Reenviar no mesmo dia sobrescreve o envio anterior.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data: { type: string, format: date, description: Padrão hoje. }
+                peso:
+                  oneOf: [{ type: number }, { type: string }]
+                  nullable: true
+                  description: Aceita "62,4" e "62.4".
+                adesao_dieta: { type: integer, minimum: 0, maximum: 10 }
+                adesao_treino: { type: integer, minimum: 0, maximum: 10 }
+                energia: { type: integer, minimum: 0, maximum: 10 }
+                sono: { type: integer, minimum: 0, maximum: 10 }
+                intestino: { type: string }
+                ciclo_menstrual: { type: string }
+                dificuldades: { type: string }
+                observacao: { type: string }
+                fotos:
+                  type: array
+                  items: { type: string }
+                  description: Caminhos no bucket feedback-fotos, prefixados pelo aluna_id.
+      responses:
+        '200':
+          description: Enviado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enviado: { type: boolean }
+                  data: { type: string, format: date }
+        '400':
+          description: Nota fora de 0–10 ou peso impossível.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /evolucao:
+    get:
+      summary: Treinos no período e série de peso
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  treinos_30_dias: { type: integer }
+                  serie_peso:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        data: { type: string, format: date }
+                        peso: { type: number }
+                  treinos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        data: { type: string, format: date }
+                        duracao_min: { type: integer, nullable: true }
+                        intensidade: { type: integer, nullable: true }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /treino/concluir:
+    post:
+      summary: Marcar treino como feito
+      description: Idempotente por (aluna, dia, data) — tocar duas vezes não duplica.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dia_id]
+              properties:
+                dia_id: { type: string, format: uuid }
+                plano_fase_id: { type: string, format: uuid }
+                data: { type: string, format: date }
+                duracao_min: { type: integer }
+                intensidade: { type: integer, minimum: 1, maximum: 10 }
+                observacao: { type: string }
+      responses:
+        '200':
+          description: Registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  concluido: { type: boolean }
+                  data: { type: string, format: date }
+        '400':
+          description: dia_id ausente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /treino/desfazer:
+    post:
+      summary: Desmarcar treino
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dia_id]
+              properties:
+                dia_id: { type: string, format: uuid }
+                data: { type: string, format: date }
+      responses:
+        '200':
+          description: Desmarcado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  concluido: { type: boolean }
+
+  /notificacoes:
+    get:
+      summary: Notificações já entregues
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notificacoes:
+                    type: array
+                    items: { $ref: '#/components/schemas/Notificacao' }
+
+  /notificacoes/lida:
+    post:
+      summary: Marcar como lida
+      description: Sem `id`, marca todas as não lidas.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  marcadas: { type: boolean }
+
+  /dispositivo:
+    post:
+      summary: Registrar aparelho para push
+      description: |
+        Upsert por token. Se outra aluna logar no mesmo aparelho, o token troca
+        de dono — senão ela receberia push da anterior.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, example: "ExponentPushToken[xxxxx]" }
+                plataforma: { type: string, enum: [ios, android, web] }
+                provedor: { type: string, enum: [expo, fcm, apns], default: expo }
+                modelo: { type: string, example: "iPhone 14" }
+      responses:
+        '200':
+          description: Registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dispositivo_id: { type: string, format: uuid }
+    delete:
+      summary: Remover aparelho
+      description: Chame no logout, senão o aparelho segue recebendo push da conta antiga.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        '200':
+          description: Removido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  removido: { type: boolean }
+
+  /exportar:
+    get:
+      summary: Exportar os próprios dados (LGPD art. 18)
+      responses:
+        '200':
+          description: JSON com perfil, treinos realizados, feedbacks e dietas.
+          content:
+            application/json:
+              schema: { type: object }
+
+  /conta:
+    delete:
+      summary: Excluir a conta (App Store Review 5.1.1(v))
+      description: |
+        Irreversível. Apaga o login, os arquivos no storage, os treinos
+        registrados, os feedbacks e os dispositivos.
+
+        O cadastro comercial da aluna (contrato, pagamento, vencimento) fica
+        retido como registro de negócio, e deixa de apontar para qualquer conta
+        logada. Confirme com a aluna antes de chamar e faça signOut depois.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo: { type: string }
+      responses:
+        '200':
+          description: Conta excluída
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  excluido: { type: boolean }
+                  aluna_id: { type: string, format: uuid }
+                  em: { type: string, format: date-time }

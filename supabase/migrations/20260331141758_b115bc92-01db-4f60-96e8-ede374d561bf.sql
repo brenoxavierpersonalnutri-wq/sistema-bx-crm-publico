@@ -1,0 +1,1 @@
+ALTER TABLE public.consultations ADD COLUMN IF NOT EXISTS is_future_reschedule boolean DEFAULT false;

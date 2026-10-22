@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Entrega ao CRM, UMA vez, o client ID/secret do app OAuth do Google (YouTube) sem ninguém colar no painel.
+
+De onde vem: o Breno guarda no Mac, no terminal dele, e o cofre leva pra VPS:
+  bash ~/.claude/head-turbo/bin/guardar-chave.sh GOOGLE_CLIENT_ID --testar nenhum --levar-vps
+  bash ~/.claude/head-turbo/bin/guardar-chave.sh GOOGLE_CLIENT_SECRET --testar nenhum --levar-vps
+Aqui (root, na VPS) o script lê os dois do cofre do usuário do kit (padrão /home/turbo/.config/head-turbo/cofre.env;
+outro caminho: HEADTURBO_COFRE=/caminho), lê o WA_PROXY_SECRET de /etc/headturbo-wa-proxy/proxy.env (já pareado com
+o CRM), assina "<ts>.<nonce>.<corpo>" com HMAC-SHA256 e faz POST (IPv4) em .../functions/v1/google-pareamento.
+
+Instalado em /usr/local/sbin/headturbo-google-parear (root, 0700). Uso:
+  sudo headturbo-google-parear             # seco: confere cofre e publicação; nada é enviado
+  sudo headturbo-google-parear --executar  # envia uma vez; mostra só status HTTP e o hash curto
+
+Nunca imprime segredo: só nomes, tamanhos, status e o hash (12 hex do sha256 do valor gravado).
+Rearmar (trocou o client secret no Google): o dono roda no SQL  SELECT public.google_pareamento_reabrir();
+"""
+import hashlib, hmac, json, os, re, secrets, socket, sys, time, urllib.error, urllib.request
+
+URL = "https://SEU_PROJECT_REF.supabase.co/functions/v1/google-pareamento"
+COFRE = os.environ.get("HEADTURBO_COFRE", "/home/turbo/.config/head-turbo/cofre.env")
+PROXY = "/etc/headturbo-wa-proxy/proxy.env"
+EXECUTAR = "--executar" in sys.argv[1:]
+
+# força IPv4: a função só aceita o IPv4 público da VPS
+_orig = socket.getaddrinfo
+def _so_v4(host, *a, **k):
+    return [r for r in _orig(host, *a, **k) if r[0] == socket.AF_INET]
+socket.getaddrinfo = _so_v4
+
+
+def ler_env(caminho):
+    out = {}
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            linha = linha.strip()
+            if linha.startswith("export "):
+                linha = linha[7:].strip()
+            if not linha or linha.startswith("#") or "=" not in linha:
+                continue
+            k, v = linha.split("=", 1)
+            v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                v = v[1:-1]
+            out[k.strip()] = v
+    return out
+
+
+def corpo_canonico(cid, csec):
+    """Mesma forma que a função grava (validarCorpoGoogle): o hash tem de bater."""
+    return json.dumps({"client_id": cid, "client_secret": csec}, separators=(",", ":"))
+
+
+def main():
+    if os.geteuid() != 0:
+        print("PARADO: rode como root (sudo).")
+        return 2
+    try:
+        cofre = ler_env(COFRE)
+        proxy = ler_env(PROXY)
+    except OSError as e:
+        print(f"PARADO: não consegui ler {e.filename} ({e.strerror}).")
+        return 2
+
+    cid = cofre.get("GOOGLE_CLIENT_ID", "").strip()
+    csec = cofre.get("GOOGLE_CLIENT_SECRET", "").strip()
+    segredo_hmac = proxy.get("WA_PROXY_SECRET", "").strip()
+    id_ok = bool(re.fullmatch(r"[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com", cid))
+    sec_ok = bool(re.fullmatch(r"[A-Za-z0-9_-]{20,128}", csec))
+    print(f"{COFRE}: GOOGLE_CLIENT_ID={'ok' if id_ok else 'FALTA/formato'} "
+          f"GOOGLE_CLIENT_SECRET={len(csec)} chars ({'ok' if sec_ok else 'FALTA/formato'})")
+    print(f"{PROXY}: WA_PROXY_SECRET={len(segredo_hmac)} chars")
+    if not id_ok or not sec_ok or len(segredo_hmac) < 32:
+        print("PARADO: falta valor ou formato errado. Nada enviado.")
+        return 1
+
+    corpo = corpo_canonico(cid, csec)
+    hash_local = hashlib.sha256(corpo.encode()).hexdigest()[:12]
+
+    if not EXECUTAR:
+        # GET não grava nada: 405 = publicada, 404 = não publicada
+        try:
+            urllib.request.urlopen(urllib.request.Request(URL, method="GET"), timeout=20)
+            st = 200
+        except urllib.error.HTTPError as e:
+            st = e.code
+        except Exception as e:
+            print(f"google-pareamento: sem resposta ({type(e).__name__})")
+            return 1
+        print(f"google-pareamento: HTTP {st}", "(publicada)" if st == 405 else "(NAO publicada?)")
+        print(f"hash do que seria enviado: {hash_local}")
+        print("SECO: nada foi enviado. Depois da migration 20261027100000 e da função publicada: --executar")
+        return 0
+
+    ts = str(int(time.time()))
+    nonce = secrets.token_urlsafe(24)
+    assinatura = hmac.new(segredo_hmac.encode(), f"{ts}.{nonce}.{corpo}".encode(), hashlib.sha256).hexdigest()
+    req = urllib.request.Request(URL, data=corpo.encode(), method="POST", headers={
+        "Content-Type": "application/json",
+        "x-live-ts": ts,
+        "x-live-nonce": nonce,
+        "x-live-assinatura": assinatura,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            st, resp = r.status, r.read()
+    except urllib.error.HTTPError as e:
+        st, resp = e.code, e.read()
+    except Exception as e:
+        print(f"PARADO: sem resposta ({type(e).__name__})")
+        return 1
+    try:
+        dados = json.loads(resp)
+    except Exception:
+        dados = {}
+
+    if st == 200:
+        hash_remoto = str(dados.get("hash", ""))
+        confere = hmac.compare_digest(hash_remoto, hash_local)
+        print(f"google-pareamento: HTTP 200 hash={hash_remoto} ({'confere' if confere else 'NAO CONFERE com o local ' + hash_local})")
+        return 0 if confere else 1
+    print(f"google-pareamento: HTTP {st} {str(dados.get('error', ''))[:120]}")
+    if st == 410:
+        print("Já pareado. Pra gravar de novo: o dono roda no SQL  SELECT public.google_pareamento_reabrir();")
+    elif st == 403:
+        print("Origem recusada (a função só aceita o IPv4 público da VPS).")
+    elif st == 401:
+        print("Assinatura recusada: relógio da VPS fora (janela 5 min) ou WA_PROXY_SECRET diferente do CRM.")
+    elif st == 404:
+        print("Função não publicada ainda.")
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

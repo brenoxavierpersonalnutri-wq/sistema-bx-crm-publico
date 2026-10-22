@@ -1,0 +1,46 @@
+### Roda a verificacao em todo PR e em toda entrada na main.
+#
+# Ate aqui nada era verificado antes de publicar: o merge ia direto pro ar e
+# o time descobria que quebrou tentando entrar no sistema. Com varias sessoes
+# mexendo no mesmo repositorio ao mesmo tempo, era questao de tempo.
+#
+# Lint ainda nao entra: o repositorio tem centenas de avisos acumulados e um
+# checador que nasce vermelho e ignorado no mesmo dia. Entram as tres coisas
+# que realmente pegam quebra: tipos, testes e o build de producao.
+#
+# Para que isto de fato impeca um merge quebrado, marque "Verificacao" como
+# check obrigatorio em Settings > Branches > Branch protection rules > main.
+
+name: Verificacao
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: verificacao-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # bun.lock e o lockfile real do projeto; package-lock.json fica defasado.
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+
+      - name: Tipos
+        run: bun run typecheck
+
+      - name: Testes
+        run: bun run test
+
+      - name: Build de producao
+        run: bun run build

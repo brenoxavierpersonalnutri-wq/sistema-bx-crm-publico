@@ -1,0 +1,71 @@
+# headturbo-wa-proxy — ponte fechada entre o CRM (Supabase) e o OpenWA.
+# Instalado em /opt/headturbo-wa-proxy na VPS. Só objetos com prefixo headturbo-wa-proxy.
+# Segredos: /etc/headturbo-wa-proxy/proxy.env (root, 0600) — WA_PROXY_SECRET e a
+# OPENWA_OPERATOR_KEY que o dono preenche. Nada de segredo neste arquivo.
+name: headturbo-wa-proxy
+services:
+  wa-proxy:
+    build:
+      context: .
+      labels:
+        headturbo.kit: wa-proxy
+    image: headturbo-wa-proxy:1
+    container_name: headturbo-wa-proxy
+    labels:
+      headturbo.kit: wa-proxy
+    restart: unless-stopped
+    env_file:
+      - /etc/headturbo-wa-proxy/proxy.env
+    environment:
+      OPENWA_BASE: http://headturbo-openwa-api:2785/api
+      OPENWA_SESSION_NAME: closer
+      # 2ª instância do OpenWA (motor Baileys), só do número de grupos (19/10/2026; ver APLICAR-OPENWA-GRUPOS.md).
+      # Não é segredo: a chave da sessão (OPENWA_OPERATOR_KEY_GRUPOS_1) fica no proxy.env.
+      OPENWA_BASE_GRUPOS_1: http://headturbo-openwa-grupos-api:2785/api
+      DATA_DIR: /data
+      PORT: "8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - "no-new-privileges:true"
+    # 256m: o ffmpeg da nota de voz e o /tmp (tmpfs) contam neste teto
+    mem_limit: 256m
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+    volumes:
+      - wa-proxy-data:/data
+    # só local, pra teste na própria VPS; de fora entra pelo Caddy
+    ports:
+      - "127.0.0.1:2786:8080"
+    networks:
+      openwa:
+        # IP fixo: é este que a chave OPERATOR do OpenWA deve ter em allowedIps
+        ipv4_address: 172.20.0.50
+      openwa-grupos:
+        # IP fixo: é este que a chave OPERATOR da instância de grupos tem em allowedIps
+        ipv4_address: 172.21.0.50
+      caddy: {}
+
+volumes:
+  wa-proxy-data:
+    name: headturbo_wa_proxy_data
+    labels:
+      headturbo.kit: wa-proxy
+
+networks:
+  openwa:
+    external: true
+    name: headturbo-openwa_net
+  openwa-grupos:
+    external: true
+    name: headturbo-openwa-grupos_net
+  caddy:
+    external: true
+    name: head-turbo_default

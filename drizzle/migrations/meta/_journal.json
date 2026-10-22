@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789826634540,
+      "tag": "0000_feedback_aluna_link",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790278008989,
+      "tag": "0001_booking_remove_noon_cutoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790278631045,
+      "tag": "0002_agenda_alunas_access",
+      "breakpoints": true
+    }
+  ]
+}

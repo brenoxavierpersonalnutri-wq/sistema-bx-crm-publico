@@ -1,0 +1,1 @@
+DELETE FROM consultations WHERE client_name = 'João Teste' AND client_phone = '5511999887766';

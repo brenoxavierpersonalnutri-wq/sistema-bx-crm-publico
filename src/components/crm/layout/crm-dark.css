@@ -1,0 +1,151 @@
+/* Tema escuro do CRM (/crm/*). useTemaCRM põe "dark crm-dark" no <html> enquanto o LayoutCRM está
+   montado e devolve o estado anterior ao sair, então:
+   - os portais (Dialog, Select, Popover, Sheet, Toast) herdam, porque moram no <body>;
+   - as variantes dark: que os componentes já têm passam a valer;
+   - fora do /crm nada muda.
+   Paleta (21/10/2026, pegada "painel noturno"): fundo azul-noite quase preto, superfícies em
+   cinza-chumbo com borda sutil, acento único AMARELO com texto escuro por cima.
+   Contraste (WCAG): texto #e8eaed sobre #0f1115 = 15.6:1 · muted #9aa1ad sobre #1e2128 = 6.1:1 ·
+   #0f1115 sobre o amarelo #f5c518 = 11.3:1 · amarelo como texto sobre #181b21 = 10.4:1 ·
+   branco sobre o vermelho #dc2626 = 4.8:1; vermelho como TEXTO usa #f87171 (5.9:1 sobre #181b21).
+   O verde do WhatsApp continua só dentro do chat (bolhas, áudio), que imita o app. */
+html.dark.crm-dark {
+  color-scheme: dark;
+  --background: 220 17% 7%;       /* #0f1115  fundo */
+  --foreground: 216 12% 92%;      /* #e8eaed  texto */
+  --card: 220 16% 11%;            /* #181b21  superfície (cards, painéis) */
+  --card-foreground: 216 12% 92%;
+  --popover: 220 16% 11%;
+  --popover-foreground: 216 12% 92%;
+  --primary: 46 92% 53%;          /* #f5c518  acento amarelo */
+  --primary-foreground: 220 17% 7%;
+  --secondary: 222 14% 14%;       /* #1e2128  item dentro do card */
+  --secondary-foreground: 216 12% 92%;
+  --muted: 222 14% 14%;
+  --muted-foreground: 218 9% 64%; /* #9aa1ad */
+  --accent: 222 13% 17%;          /* #252830  hover neutro de ghost/outline */
+  --accent-foreground: 216 12% 92%;
+  --success: 142 64% 45%;         /* #29bb5e  bolinha "conectado" */
+  --success-foreground: 220 17% 7%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 220 17% 7%;
+  --destructive: 0 72% 51%;       /* #dc2626  (branco por cima = 4.8:1) */
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 13% 19%;          /* #2a2e36 */
+  --input: 220 12% 23%;           /* #33373f  borda de campo */
+  --ring: 46 92% 53%;
+  --radius: 0.75rem;
+
+  --sidebar-background: 220 17% 7%;
+  --sidebar-foreground: 216 12% 92%;
+  --sidebar-primary: 46 92% 53%;
+  --sidebar-primary-foreground: 220 17% 7%;
+  --sidebar-accent: 222 14% 14%;
+  --sidebar-accent-foreground: 216 12% 92%;
+  --sidebar-border: 220 13% 19%;
+  --sidebar-ring: 46 92% 53%;
+
+  scrollbar-color: #2f333c transparent;
+}
+html.dark.crm-dark body { background-color: #0f1115; }
+
+/* Tipografia do CRM: uma família só (DM Sans), títulos em negrito com tracking fechado.
+   O Space Grotesk dos títulos do resto do app sai aqui: no painel ele destoava da lista. */
+html.crm-dark :is(h1, h2, h3, h4, h5, h6) { font-family: 'DM Sans', sans-serif; letter-spacing: -0.015em; }
+
+/* Superfícies chapadas: borda sutil no lugar de sombra (a sombra some no fundo escuro). */
+html.crm-dark :is(.shadow-sm, .shadow, .shadow-md) { box-shadow: none; }
+
+/* Abas do shadcn (Radix, data-state): aba ativa em chumbo, texto claro e traço amarelo embaixo. */
+html.crm-dark [role="tab"][data-state="active"] { background-color: hsl(var(--accent)); color: hsl(var(--foreground)); box-shadow: inset 0 -2px 0 hsl(var(--primary)); }
+
+/* Tabelas: cabeçalho discreto, linhas com divisória sutil e hover chumbo. */
+html.crm-dark thead th { color: hsl(var(--muted-foreground)); font-weight: 500; }
+html.crm-dark tbody tr:hover { background-color: hsl(var(--accent) / 0.6); }
+
+/* destructive como texto: o #dc2626 do botão daria 3.6:1 sobre o card */
+html.crm-dark .text-destructive { color: #f87171; }
+
+/* Foco visível em amarelo em qualquer controle (teclado). */
+html.crm-dark :is(a, button, [role="tab"], [role="menuitem"], summary):focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* campos: um tom acima do fundo; foco com o acento */
+html.crm-dark :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]), textarea, button[role="combobox"]):not([class*="bg-transparent"]):not([class*="crm-chat-campo"]) {
+  background-color: #14161b;
+}
+html.crm-dark :is(input, textarea)::placeholder { color: #8b919c; }
+
+/* switch: bolinha clara sobre trilho escuro */
+html.crm-dark button[role="switch"] > span { background-color: #e8eaed; }
+html.crm-dark button[role="switch"][data-state="checked"] > span { background-color: #0f1115; }
+html.crm-dark button[role="switch"][data-state="unchecked"] { background-color: #2f333c; }
+
+/* scrollbar escura (WebKit) */
+html.crm-dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+html.crm-dark ::-webkit-scrollbar-track { background: transparent; }
+html.crm-dark ::-webkit-scrollbar-thumb {
+  background-color: #2a2e36;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+html.crm-dark ::-webkit-scrollbar-thumb:hover { background-color: #3a3f49; }
+
+/* Conversas no padrão WhatsApp Web escuro, em preto neutro */
+html.crm-dark .crm-chat {
+  --chat-fundo: #0d0f13;
+  --chat-padrao: rgba(255, 255, 255, 0.03);
+  --chat-barra: #14161b;
+  --chat-bolha-out: #005c4b;      /* enviada: verde-escuro (#e9edef = 7.9:1) */
+  --chat-bolha-in: #1e2128;       /* recebida: chumbo */
+  --chat-texto: #e9edef;
+  --chat-meta: #9aa1ad;
+  --chat-lido: #53bdeb;
+  --chat-campo: #1e2128;
+  --chat-separador: #1a1d23;
+}
+
+/* recharts: tooltip, eixos e grade escuros */
+html.crm-dark .recharts-default-tooltip {
+  background-color: #181b21 !important;
+  border: 1px solid #2a2e36 !important;
+  border-radius: 8px;
+  color: #e8eaed;
+}
+html.crm-dark .recharts-tooltip-label { color: #e8eaed !important; }
+html.crm-dark .recharts-cartesian-axis-tick text,
+html.crm-dark .recharts-legend-item-text { fill: #9aa1ad; color: #9aa1ad !important; }
+html.crm-dark .recharts-cartesian-grid line { stroke: #2a2e36; }
+html.crm-dark .recharts-cartesian-axis-line,
+html.crm-dark .recharts-cartesian-axis-tick-line { stroke: #33373f; }
+
+/* Cores fixas de tema claro que não têm variante dark: no próprio elemento.
+   O :not([class*="dark:..."]) deixa a variante do componente vencer quando ela existe. */
+html.crm-dark .bg-white:not([class*="dark:bg-"]) { background-color: hsl(var(--card)); }
+html.crm-dark .text-black:not([class*="dark:text-"]) { color: hsl(var(--foreground)); }
+html.crm-dark .bg-black\/5:not([class*="dark:bg-"]) { background-color: rgba(255, 255, 255, 0.05); }
+html.crm-dark .bg-black\/10:not([class*="dark:bg-"]) { background-color: rgba(255, 255, 255, 0.08); }
+html.crm-dark .border-black\/5:not([class*="dark:border-"]),
+html.crm-dark .border-black\/10:not([class*="dark:border-"]) { border-color: hsl(var(--border)); }
+html.crm-dark .hover\:bg-black\/5:hover:not([class*="dark:hover:bg-"]) { background-color: rgba(255, 255, 255, 0.06); }
+
+/* fundos claros coloridos → véu da cor */
+html.crm-dark :is(.bg-green-50, .bg-green-100):not([class*="dark:bg-"]) { background-color: rgba(34, 197, 94, 0.12); }
+html.crm-dark :is(.bg-emerald-50, .bg-emerald-100):not([class*="dark:bg-"]) { background-color: rgba(16, 185, 129, 0.12); }
+html.crm-dark :is(.bg-amber-50, .bg-amber-100):not([class*="dark:bg-"]) { background-color: rgba(245, 158, 11, 0.12); }
+html.crm-dark :is(.bg-red-50, .bg-red-100, .bg-rose-50, .bg-rose-100):not([class*="dark:bg-"]) { background-color: rgba(244, 63, 94, 0.12); }
+html.crm-dark :is(.bg-sky-50, .bg-sky-100, .bg-blue-50, .bg-blue-100):not([class*="dark:bg-"]) { background-color: rgba(14, 165, 233, 0.12); }
+
+/* textos coloridos escuros (feitos para fundo branco) → tom claro legível no preto */
+html.crm-dark :is(.text-green-600, .text-green-700, .text-green-800):not([class*="dark:text-"]) { color: #4ade80; }
+html.crm-dark :is(.text-emerald-600, .text-emerald-700, .text-emerald-800):not([class*="dark:text-"]) { color: #34d399; }
+html.crm-dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900):not([class*="dark:text-"]) { color: #fcd34d; }
+html.crm-dark :is(.text-red-600, .text-red-700, .text-rose-700, .text-rose-800):not([class*="dark:text-"]) { color: #f87171; }
+html.crm-dark :is(.text-sky-700, .text-sky-800, .text-blue-600, .text-blue-700):not([class*="dark:text-"]) { color: #7dd3fc; }
+html.crm-dark :is(.text-pink-600):not([class*="dark:text-"]) { color: #f472b6; }
+html.crm-dark :is(.text-indigo-500, .text-indigo-600):not([class*="dark:text-"]) { color: #a5b4fc; }
+html.crm-dark :is(.border-green-600, .border-green-800):not([class*="dark:border-"]) { border-color: rgba(74, 222, 128, 0.45); }
+html.crm-dark :is(.border-amber-500, .border-amber-700):not([class*="dark:border-"]) { border-color: rgba(252, 211, 77, 0.45); }
